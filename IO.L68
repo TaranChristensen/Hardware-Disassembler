@@ -1,0 +1,29 @@
+00002000 Starting Address
+Assembler used: EASy68K Editor/Assembler v5.15.04
+Created On: 2/16/2016 5:59:52 PM
+
+00000000                             1  *-----------------------------------------------------------
+00000000                             2  * Title      : IO
+00000000                             3  * Written by : Circles
+00000000                             4  * Date       : ##/##/16
+00000000                             5  * Description: Input Output File
+00000000                             6  *-----------------------------------------------------------
+00002000                             7      ORG    $2000
+00002000                             8  IOSTART:                  ; first instruction of program
+00002000                             9  
+00002000                            10  * Put program code here
+00002000                            11  
+00002000  143C 00FF                 12      MOVE.B #$FF,D2
+00002004                            13  
+00002004                            14  * Put variables and constants here
+00002004                            15  
+00002004                            16      END    IOSTART        ; last line of source
+
+No errors detected
+No warnings generated
+
+
+SYMBOL TABLE INFORMATION
+Symbol-name         Value
+-------------------------
+IOSTART             2000

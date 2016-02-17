@@ -1,0 +1,52 @@
+00001000 Starting Address
+Assembler used: EASy68K Editor/Assembler v5.15.04
+Created On: 2/16/2016 6:01:50 PM
+
+00000000                             1  *-----------------------------------------------------------
+00000000                             2  * Title      : Master
+00000000                             3  * Written by : Circles
+00000000                             4  * Date       : ##/##/16
+00000000                             5  * Description: Project Master File
+00000000                             6  *-----------------------------------------------------------
+00001000                             7      ORG    $1000
+00001000                             8  START:                  ; first instruction of program
+00001000                             9  
+00001000                            10  * Put program code here
+00001000                            11      INCLUDE "IO.X68"    ;
+00001000                            12  
+00001000                            13  
+00001000  143C 00FF                 14      MOVE.B #$FF,D2
+00001004                            15      
+00001004                            16  
+00001004                            17  -------------------- end include --------------------
+00001004                            18      INCLUDE "OpCode.X68"    ;
+00001004                            19  
+00001004                            20  
+00001004  143C 000C                 21      MOVE.B  #$0C,D2
+00001008                            22  
+00001008                            23  
+00001008                            24  
+00001008                            25  -------------------- end include --------------------
+00001008                            26      INCLUDE "EA.X68"    ;
+00001008                            27  
+00001008                            28  
+00001008  143C 00EA                 29      MOVE.B  #$EA,D2
+0000100C                            30  
+0000100C                            31  
+0000100C                            32  
+0000100C                            33  -------------------- end include --------------------
+0000100C                            34  
+0000100C  FFFF FFFF                 35      SIMHALT             ; halt simulator
+00001010                            36  
+00001010                            37  * Put variables and constants here
+00001010                            38  
+00001010                            39      END    START        ; last line of source
+
+No errors detected
+No warnings generated
+
+
+SYMBOL TABLE INFORMATION
+Symbol-name         Value
+-------------------------
+START               1000

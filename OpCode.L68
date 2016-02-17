@@ -1,0 +1,29 @@
+00003000 Starting Address
+Assembler used: EASy68K Editor/Assembler v5.15.04
+Created On: 2/16/2016 5:59:44 PM
+
+00000000                             1  *-----------------------------------------------------------
+00000000                             2  * Title      : OpCode
+00000000                             3  * Written by : Circles
+00000000                             4  * Date       : ##/##/16
+00000000                             5  * Description: Operation Codes File
+00000000                             6  *-----------------------------------------------------------
+00003000                             7      ORG    $3000
+00003000                             8  OPSTART:                  ; first instruction of program
+00003000                             9  
+00003000                            10  * Put program code here
+00003000                            11  
+00003000  143C 000C                 12      MOVE.B  #$0C,D2
+00003004                            13  
+00003004                            14  * Put variables and constants here
+00003004                            15  
+00003004                            16      END    OPSTART        ; last line of source
+
+No errors detected
+No warnings generated
+
+
+SYMBOL TABLE INFORMATION
+Symbol-name         Value
+-------------------------
+OPSTART             3000
