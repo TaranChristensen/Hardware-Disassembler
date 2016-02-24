@@ -1,6 +1,6 @@
 00001000 Starting Address
 Assembler used: EASy68K Editor/Assembler v5.15.04
-Created On: 2/16/2016 6:01:50 PM
+Created On: 2/23/2016 6:34:34 PM
 
 00000000                             1  *-----------------------------------------------------------
 00000000                             2  * Title      : Master
@@ -29,18 +29,62 @@ Created On: 2/16/2016 6:01:50 PM
 00001008                            25  -------------------- end include --------------------
 00001008                            26      INCLUDE "EA.X68"    ;
 00001008                            27  
-00001008                            28  
-00001008  143C 00EA                 29      MOVE.B  #$EA,D2
-0000100C                            30  
+00001008  143C 00EA                 28      MOVE.B  #$EA,D2
+0000100C                            29  
+0000100C                            30  -------------------- end include --------------------
 0000100C                            31  
 0000100C                            32  
-0000100C                            33  -------------------- end include --------------------
-0000100C                            34  
-0000100C  FFFF FFFF                 35      SIMHALT             ; halt simulator
-00001010                            36  
-00001010                            37  * Put variables and constants here
-00001010                            38  
-00001010                            39      END    START        ; last line of source
+0000100C                            33      
+0000100C                            34  *-------Code for output-------
+0000100C  43F9 00001066             35          LEA     MESSAGE,A1      Display the intro
+00001012  103C 000E                 36          MOVE.B  #14, D0
+00001016  4E4F                      37          TRAP    #15
+00001018                            38  
+00001018  43F9 00001083             39  LOOP    LEA     MESS2,A1        Display the prompt and loop it
+0000101E  103C 000E                 40          MOVE.B  #14,D0          
+00001022  4E4F                      41          TRAP    #15       
+00001024                            42  
+00001024                            43  *-------Code for input-------
+00001024  103C 0004                 44          MOVE.B  #4,D0           Trap task 4 does the following:
+00001028  4E4F                      45          TRAP    #15             Read a number from the keyboard into D1.L
+0000102A                            46          
+0000102A  43F9 000010A1             47          LEA     RES,A1          Output the beginning of the message
+00001030  103C 000E                 48          MOVE.B  #14,D0  
+00001034  4E4F                      49          TRAP    #15
+00001036                            50          
+00001036  103C 0003                 51          MOVE.B  #3,D0           Output the number that was input
+0000103A  4E4F                      52          TRAP    #15
+0000103C                            53          
+0000103C  43F9 000010AF             54          LEA     SPC,A1          Puts the space after the number
+00001042  103C 000E                 55          MOVE.B  #14,D0
+00001046  4E4F                      56          TRAP    #15
+00001048                            57          
+00001048  B2BC 00000000             58          CMP.L   #0,D1           Compares D1 to the number 0
+0000104E  6700 0004                 59          BEQ     DONE            Branch to DONE if they are equal
+00001052                            60  
+00001052  60C4                      61          BRA     LOOP
+00001054                            62          
+00001054                            63  *-------Finishes the program-        
+00001054  43F9 000010B3             64  DONE    LEA     OUTRO,A1        Display the ending message 
+0000105A  103C 000E                 65          MOVE.B  #14,D0
+0000105E  4E4F                      66          TRAP    #15
+00001060  103C 0009                 67          MOVE.B  #9,D0
+00001064  4E4F                      68          TRAP    #15             Halt Simulator
+00001066                            69  
+00001066  =0000000D                 70  CR      EQU     $0D         
+00001066  =0000000A                 71  LF      EQU     $0A 
+00001066                            72  
+00001066                            73  *-------Various outputs------
+00001066= 54 65 61 6D 20 43 ...     74  MESSAGE DC.B    'Team Circles Disassembler ',CR,LF,0     Intro
+00001083= 45 6E 74 65 72 20 ...     75  MESS2   DC.B    'Enter something (0) to quit: ',0         Prompt for the user
+000010A1= 59 6F 75 20 74 79 ...     76  RES     DC.B    'You typed in ',0                         Response to the user
+000010AF= 20 0D 0A 00               77  SPC     DC.B    ' ',CR,LF,0                               endl
+000010B3= 47 6F 6F 64 62 79 ...     78  OUTRO   DC.B    'Goodbye !',0                             Outro message
+000010BE  FFFF FFFF                 79      SIMHALT             ; halt simulator
+000010C2                            80  
+000010C2                            81  * Put variables and constants here
+000010C2                            82  
+000010C2                            83      END    START        ; last line of source
 
 No errors detected
 No warnings generated
@@ -49,4 +93,13 @@ No warnings generated
 SYMBOL TABLE INFORMATION
 Symbol-name         Value
 -------------------------
+CR                  D
+DONE                1054
+LF                  A
+LOOP                1018
+MESS2               1083
+MESSAGE             1066
+OUTRO               10B3
+RES                 10A1
+SPC                 10AF
 START               1000
