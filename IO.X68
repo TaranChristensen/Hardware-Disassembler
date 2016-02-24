@@ -8,8 +8,8 @@
 * Put program code here
 
     MOVE.B #$FF,D2
-    
-* Put variables and constants here
+      
+* Put variables and constants herevv
 
 *~Font name~Courier New~
 *~Font size~10~
