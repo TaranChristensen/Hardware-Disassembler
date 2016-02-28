@@ -1,6 +1,6 @@
-00003000 Starting Address
+00001000 Starting Address
 Assembler used: EASy68K Editor/Assembler v5.15.04
-Created On: 2/16/2016 5:59:44 PM
+Created On: 2/27/2016 5:27:08 PM
 
 00000000                             1  *-----------------------------------------------------------
 00000000                             2  * Title      : OpCode
@@ -8,22 +8,48 @@ Created On: 2/16/2016 5:59:44 PM
 00000000                             4  * Date       : ##/##/16
 00000000                             5  * Description: Operation Codes File
 00000000                             6  *-----------------------------------------------------------
-00003000                             7      ORG    $3000
-00003000                             8  OPSTART:                  ; first instruction of program
-00003000                             9  
-00003000                            10  * Put program code here
-00003000                            11  
-00003000  143C 000C                 12      MOVE.B  #$0C,D2
-00003004                            13  
-00003004                            14  * Put variables and constants here
-00003004                            15  
-00003004                            16      END    OPSTART        ; last line of source
+00000000                             7  
+00000000                             8  * Put program code here
+00000000                             9  
+00000000                            10  ; Here we assume that A2 contains the address pointing to our OpCode, and
+00000000                            11  ;  we assume that A1 contains the address pointing to our IOStringLoc
+00000000  2A1A                      12  OPGETCODE   MOVE.L  (A2)+,D5    ; Push our OpCode into D5
+00000002  E99D                      13              ROL.L   #4,D5       ; Rotate our OpCode 1 nybble left
+00000004  1C05                      14              MOVE.B  D5,D6       ; Push the nybble's byte into D6
+00000006  0206 000F                 15              ANDI.B  #$0F,D6     ; Isolate our opcode nybble
+0000000A  BC3C 0001                 16              CMP.B   #$01,D6     
+0000000E  670E                      17              BEQ.S   MOVEB       ; MOVE.B
+00000010  BC3C 0003                 18              CMP.B   #$03,D6     
+00000014  6714                      19              BEQ.S   MOVEW       ; MOVE.W
+00000016  BC3C 0002                 20              CMP.B   #$02,D6
+0000001A  670E                      21              BEQ.S   MOVEL       ; MOVE.L
+0000001C                            22              
+0000001C  600C                      23              BRA.S   UNKNOWN
+0000001E                            24              
+0000001E                            25  MOVEB
+0000001E  22FC 4D4F5645             26              MOVE.L  #'MOVE',(A1)+
+00000024  32FC 2E42                 27              MOVE.W  #'.B',(A1)+
+00000028  4E75                      28              RTS
+0000002A                            29  MOVEW
+0000002A                            30  MOVEL
+0000002A                            31  
+0000002A                            32  UNKNOWN
+0000002A  22FC 3F3F3F3F             33              MOVE.L  #'????',(A1)+
+00000030  4E75                      34              RTS
+00000032                            35  * Put variables and constants here
+00000032                            36  
+00000032                            37  
+Line 38 WARNING: END directive missing, starting address not set
 
 No errors detected
-No warnings generated
+1 warning generated
 
 
 SYMBOL TABLE INFORMATION
 Symbol-name         Value
 -------------------------
-OPSTART             3000
+MOVEB               1E
+MOVEL               2A
+MOVEW               2A
+OPGETCODE           0
+UNKNOWN             2A
