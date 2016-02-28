@@ -1,6 +1,6 @@
-00002000 Starting Address
+00001000 Starting Address
 Assembler used: EASy68K Editor/Assembler v5.15.04
-Created On: 2/16/2016 5:59:52 PM
+Created On: 2/27/2016 4:23:10 PM
 
 00000000                             1  *-----------------------------------------------------------
 00000000                             2  * Title      : IO
@@ -8,22 +8,122 @@ Created On: 2/16/2016 5:59:52 PM
 00000000                             4  * Date       : ##/##/16
 00000000                             5  * Description: Input Output File
 00000000                             6  *-----------------------------------------------------------
-00002000                             7      ORG    $2000
-00002000                             8  IOSTART:                  ; first instruction of program
-00002000                             9  
-00002000                            10  * Put program code here
-00002000                            11  
-00002000  143C 00FF                 12      MOVE.B #$FF,D2
-00002004                            13  
-00002004                            14  * Put variables and constants here
-00002004                            15  
-00002004                            16      END    IOSTART        ; last line of source
+00000000                             7  
+00000000                             8  * Put program code here
+00000000                             9  *-------Code for output-------
+00000000  43F9 000000C0             10  IOINTRO LEA     IntroMsg,A1      Display the intro
+00000006  103C 000E                 11          MOVE.B  #14, D0
+0000000A  4E4F                      12          TRAP    #15
+0000000C                            13  
+0000000C  43F9 000000DD             14  IOLOOP  LEA     HexStart,A1        Display the prompt and loop it
+00000012  103C 000E                 15          MOVE.B  #14,D0          
+00000016  4E4F                      16          TRAP    #15       
+00000018                            17  
+00000018                            18  *-------Code for input-------
+00000018  43F9 00000100             19          LEA  IOStringLoc,A1  ; Store the string of our user input at StartAddress,A1           ;
+0000001E  103C 0002                 20          MOVE.B  #2,D0           ;   uses Trap #15, Task 2
+00000022  4E4F                      21          TRAP    #15             ;
+00000024                            22          
+00000024  4284                      23          CLR.L   D4              ; Ensure our counter (D4) is 0      
+00000026                            24              
+00000026  5244                      25  IOASCIItoHEX    ADDQ    #1,D4
+00000028  E98A                      26                  LSL.L   #4,D2           ; Scoot D2 a nybble
+0000002A  1619                      27                  MOVE.B  (A1)+,D3        ; Move a Byte from A1's address to D3
+0000002C  0403 0030                 28                  SUB.B   #48,D3          ; Sub 48 to turn ASCII 0 into binary 0
+00000030  B63C 0009                 29                  CMP.B   #9,D3           ; If our number is greater than 9..
+00000034  6F02                      30                  BLE.S   IOORTAG         ; .. it must be a character; A-F: 
+00000036  5F03                      31                  SUB.B   #7,D3           ; Sub 7 to turn A into 10
+00000038  8403                      32  IOORTAG         OR.B    D3,D2           ; Store our nybble into D2
+0000003A  B204                      33                  CMP.B   D4,D1           ; See if we've read all the characters
+0000003C  66E8                      34                  BNE.S   IOASCIItoHEX    ; Continue if we haven't
+0000003E                            35              
+0000003E  23C2 0000014A             36          MOVE.L  D2,StartAddress ; Store our StartAddress, just in case
+00000044                            37  
+00000044                            38          
+00000044  43F9 0000012D             39          LEA     RES,A1          ; Output the beginning of the message
+0000004A  103C 000E                 40          MOVE.B  #14,D0  
+0000004E  4E4F                      41          TRAP    #15
+00000050                            42  
+00000050                            43          ; ==== OUTPUT USER INPUT ====
+00000050                            44          ; The following outputs the input, converting what we've saved in HEX to ASCII
+00000050                            45          ; We won't need this in the final version, but the below code should be handy
+00000050                            46          ;  for print out EA values
+00000050  2439 0000014A             47          MOVE.L  StartAddress,D2 ; Ensure our address is actually at D2
+00000056  7208                      48          MOVEQ   #8,D1           ; There are 8 characters in the hex of our address
+00000058  4284                      49          CLR.L   D4              ; Ensure our counter (D4) is 0
+0000005A  23FC 00000000 00000100    50          MOVE.L  #0,IOStringLoc  ; == Testing Purposes; not nessessary ==   
+00000064  43F9 00000100             51          LEA     IOStringLoc,A1  ; Load our IO String location, to store our output at  
+0000006A                            52          
+0000006A  5244                      53  IOHEXtoASCII    ADDQ    #1,D4
+0000006C  E99A                      54                  ROL.L   #4,D2           ; Get the left-most nyblle to the front..
+0000006E  1602                      55                  MOVE.B  D2,D3           ; .. Put the front-most byte into D3    
+00000070  C63C 000F                 56                  AND.B   #$0F,D3         ; Distill D3 down to the original left-most nybble
+00000074  B63C 0009                 57                  CMP.B   #9,D3           ; See if our number is greater than 9..
+00000078  6F00 0004                 58                  BLE     IODIGIT         ; If it is 9 or less, it's a digit..
+0000007C  5E03                      59                  ADD.B   #7,D3           ; Otherwise it is a digit, and needs an additional 7
+0000007E  0603 0030                 60  IODIGIT         ADD.B   #48,D3          ; We now how the nybble's ASCII code
+00000082  12C3                      61                  MOVE.B  D3,(A1)+        ; Move the ASCII code into the output string at A1
+00000084  B204                      62                  CMP.B   D4,D1           ; See if we've read all the characters
+00000086  66E2                      63                  BNE.S   IOHEXtoASCII    ; Continue if we haven't
+00000088                            64          
+00000088  43F9 00000100             65          LEA     IOStringLoc,A1  ; Now that we've populated the string, load it's beginning
+0000008E  103C 0001                 66          MOVE.B  #1,D0           ; Trap task 1 prints a string at A1 with #D1 bytes.
+00000092  4E4F                      67          TRAP    #15
+00000094                            68          ; ==== END OUTPUT USER INPUT ====
+00000094                            69  
+00000094  43F9 0000013B             70          LEA     SPC,A1          Puts the space after the number
+0000009A  103C 000E                 71          MOVE.B  #14,D0
+0000009E  4E4F                      72          TRAP    #15
+000000A0                            73          
+000000A0  B2BC 00000001             74          CMP.L   #1,D1           Compares D1 to the number 1 (eg. Address length of 1)
+000000A6  6700 0006                 75          BEQ     IODONE            Branch to DONE if they are equal
+000000AA                            76  
+000000AA  6000 FF60                 77          BRA     IOLOOP
+000000AE                            78          
+000000AE                            79  *-------Finishes the program-        
+000000AE  43F9 0000013F             80  IODONE  LEA     OUTRO,A1        Display the ending message 
+000000B4  103C 000E                 81          MOVE.B  #14,D0
+000000B8  4E4F                      82          TRAP    #15
+000000BA  103C 0009                 83          MOVE.B  #9,D0
+000000BE  4E4F                      84          TRAP    #15             Halt Simulator
+000000C0                            85  
+000000C0  =0000000D                 86  CR              EQU     $0D         
+000000C0  =0000000A                 87  LF              EQU     $0A 
+000000C0  =00000100                 88  IOStringLoc     EQU     $0100   ; This is where we will store the string of the user input, and other strings
+000000C0                            89  
+000000C0                            90  *-------Various outputs------
+000000C0= 54 65 61 6D 20 43 ...     91  IntroMsg        DC.B    'Team Circles Disassembler ',CR,LF,0     Intro
+000000DD= 50 6C 65 61 73 65 ...     92  HexStart        DC.B    'Please enter a full hexidecimal address to get started, or',CR,LF,'type in 0 to quit: ',0         Prompt for the user
+0000012D= 59 6F 75 20 74 79 ...     93  RES             DC.B    'You typed in ',0                         Response to the user
+0000013B= 20 0D 0A 00               94  SPC             DC.B    ' ',CR,LF,0                               endl
+0000013F= 47 6F 6F 64 62 79 ...     95  OUTRO           DC.B    'Goodbye !',0                             Outro message
+0000014A                            96  StartAddress    DS.L    1
+0000014E                            97  
+0000014E                            98  * Put variables and constants herevv
+0000014E                            99  
+0000014E                           100  
+Line 101 WARNING: END directive missing, starting address not set
 
 No errors detected
-No warnings generated
+1 warning generated
 
 
 SYMBOL TABLE INFORMATION
 Symbol-name         Value
 -------------------------
-IOSTART             2000
+CR                  D
+HEXSTART            DD
+INTROMSG            C0
+IOASCIITOHEX        26
+IODIGIT             7E
+IODONE              AE
+IOHEXTOASCII        6A
+IOINTRO             0
+IOLOOP              C
+IOORTAG             38
+IOSTRINGLOC         100
+LF                  A
+OUTRO               13F
+RES                 12D
+SPC                 13B
+STARTADDRESS        14A
