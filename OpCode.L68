@@ -1,6 +1,6 @@
 00001000 Starting Address
 Assembler used: EASy68K Editor/Assembler v5.15.04
-Created On: 2/27/2016 5:27:08 PM
+Created On: 2/27/2016 7:58:51 PM
 
 00000000                             1  *-----------------------------------------------------------
 00000000                             2  * Title      : OpCode
@@ -14,34 +14,70 @@ Created On: 2/27/2016 5:27:08 PM
 00000000                            10  ; Here we assume that A2 contains the address pointing to our OpCode, and
 00000000                            11  ;  we assume that A1 contains the address pointing to our IOStringLoc
 00000000  2A1A                      12  OPGETCODE   MOVE.L  (A2)+,D5    ; Push our OpCode into D5
-00000002  E99D                      13              ROL.L   #4,D5       ; Rotate our OpCode 1 nybble left
-00000004  1C05                      14              MOVE.B  D5,D6       ; Push the nybble's byte into D6
+00000002  2C05                      13              MOVE.L  D5,D6       ; Also store the OpCode in D6
+00000004  E99E                      14              ROL.L   #4,D6       ; Rotate our OpCode 1 nybble left
 00000006  0206 000F                 15              ANDI.B  #$0F,D6     ; Isolate our opcode nybble
 0000000A  BC3C 0001                 16              CMP.B   #$01,D6     
 0000000E  670E                      17              BEQ.S   MOVEB       ; MOVE.B
 00000010  BC3C 0003                 18              CMP.B   #$03,D6     
-00000014  6714                      19              BEQ.S   MOVEW       ; MOVE.W
+00000014  6730                      19              BEQ.S   MOVEW       ; MOVE.W
 00000016  BC3C 0002                 20              CMP.B   #$02,D6
-0000001A  670E                      21              BEQ.S   MOVEL       ; MOVE.L
+0000001A  6740                      21              BEQ.S   MOVEL       ; MOVE.L
 0000001C                            22              
-0000001C  600C                      23              BRA.S   UNKNOWN
+0000001C  6054                      23              BRA.S   UNKNOWN
 0000001E                            24              
 0000001E                            25  MOVEB
 0000001E  22FC 4D4F5645             26              MOVE.L  #'MOVE',(A1)+
 00000024  32FC 2E42                 27              MOVE.W  #'.B',(A1)+
-00000028  4E75                      28              RTS
-0000002A                            29  MOVEW
-0000002A                            30  MOVEL
-0000002A                            31  
-0000002A                            32  UNKNOWN
-0000002A  22FC 3F3F3F3F             33              MOVE.L  #'????',(A1)+
-00000030  4E75                      34              RTS
-00000032                            35  * Put variables and constants here
-00000032                            36  
-00000032                            37  
-Line 38 WARNING: END directive missing, starting address not set
+00000028  5C41                      28              ADDQ    #6,D1           ; We added 6 new characters to our IOStringLoc 
+0000002A                            29              
+0000002A  22FC 20202020             30              MOVE.L  #'    ',(A1)+     ; Add a spacer into our IOStringLoc
+00000030  5841                      31              ADDQ    #4,D1           ; We added 4 bytes, aka 4 spaces
+00000032                            32              
+Line 33 ERROR: Undefined symbol
+00000032  4EB9 004DBB8E             33              JSR EAGETEA             ; Find and print the code stored in D5
+00000038  12FC 002C                 34              MOVE.B  #',',(A1)+
+0000003C  5241                      35              ADDQ    #1,D1
+Line 36 ERROR: Undefined symbol
+0000003E  4EB9 004DBB8E             36              JSR EAGETEA
+00000044                            37              
+00000044  4E75                      38              RTS
+00000046                            39  MOVEW
+00000046  22FC 4D4F5645             40              MOVE.L  #'MOVE',(A1)+
+0000004C  32FC 2E57                 41              MOVE.W  #'.W',(A1)+
+00000050  5C41                      42              ADDQ    #6,D1           ; We added 6 new characters to our IOStringLoc 
+00000052                            43              
+00000052  22FC 20202020             44              MOVE.L  #'    ',(A1)+       ; Add a spacer into our IOStringLoc
+00000058  5841                      45              ADDQ    #4,D1               ; We added 4 bytes, aka 4 spaces
+0000005A                            46              
+0000005A  4E75                      47              RTS
+0000005C                            48  MOVEL
+0000005C  22FC 4D4F5645             49              MOVE.L  #'MOVE',(A1)+
+00000062  32FC 2E4C                 50              MOVE.W  #'.L',(A1)+
+00000066  5C41                      51              ADDQ    #6,D1           ; We added 6 new characters to our IOStringLoc 
+00000068                            52              
+00000068  22FC 20202020             53              MOVE.L  #'    ',(A1)+       ; Add a spacer into our IOStringLoc
+0000006E  5841                      54              ADDQ    #4,D1               ; We added 4 bytes, aka 4 spaces
+00000070                            55          
+00000070  4E75                      56              RTS
+00000072                            57  
+00000072                            58  UNKNOWN
+00000072  22FC 3F3F3F3F             59              MOVE.L  #'????',(A1)+
+00000078  5841                      60              ADDQ    #4,D1           ; We added 4 new characters to our IOStringLoc 
+0000007A                            61              
+0000007A  22FC 20202020             62              MOVE.L  #'    ',(A1)+       ; Add a spacer into our IOStringLoc
+00000080  5841                      63              ADDQ    #4,D1               ; We added 4 bytes, aka 4 spaces
+00000082  32FC 2020                 64              MOVE.W  #'  ',(A1)+         ; Add a spacer into our IOStringLoc
+00000086  5441                      65              ADDQ    #2,D1               ; We added 2 bytes, aka 2 spaces
+00000088                            66          
+00000088  4E75                      67              RTS
+0000008A                            68  * Put variables and constants here
+0000008A                            69  
+0000008A                            70  
+0000008A                            71  
+Line 72 WARNING: END directive missing, starting address not set
 
-No errors detected
+2 errors detected
 1 warning generated
 
 
@@ -49,7 +85,7 @@ SYMBOL TABLE INFORMATION
 Symbol-name         Value
 -------------------------
 MOVEB               1E
-MOVEL               2A
-MOVEW               2A
+MOVEL               5C
+MOVEW               46
 OPGETCODE           0
-UNKNOWN             2A
+UNKNOWN             72

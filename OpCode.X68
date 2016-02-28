@@ -9,9 +9,10 @@
 
 ; Here we assume that A2 contains the address pointing to our OpCode, and
 ;  we assume that A1 contains the address pointing to our IOStringLoc
-OPGETCODE   MOVE.L  (A2)+,D5    ; Push our OpCode into D5
-            ROL.L   #4,D5       ; Rotate our OpCode 1 nybble left
-            MOVE.B  D5,D6       ; Push the nybble's byte into D6
+OPGETCODE   MOVE.W  (A2)+,D5    ; Push our OpCode into D5
+            MOVE.L  D5,D6       ; Also store the OpCode in D6
+            ROR.L   #8,D6       ; Rotate our OpCode to right-most nybble
+            ROR.L   #4,D6       ; 
             ANDI.B  #$0F,D6     ; Isolate our opcode nybble
             CMP.B   #$01,D6     
             BEQ.S   MOVEB       ; MOVE.B
@@ -20,29 +21,84 @@ OPGETCODE   MOVE.L  (A2)+,D5    ; Push our OpCode into D5
             CMP.B   #$02,D6
             BEQ.S   MOVEL       ; MOVE.L
             
-            BRA.S   UNKNOWN
+            BRA     UNKNOWN
             
 MOVEB
             MOVE.L  #'MOVE',(A1)+
             MOVE.W  #'.B',(A1)+
             ADDQ    #6,D1           ; We added 6 new characters to our IOStringLoc 
+            
+            MOVE.L  #'    ',(A1)+     ; Add a spacer into our IOStringLoc
+            ADDQ    #4,D1           ; We added 4 bytes, aka 4 spaces
+            
+            MOVE.L  D5,D6              ; Push D5 into D6
+            ANDI.L  #$003F,D6          ; Isolate the Src EA bits 
+            JSR EAGETSRCEA             ; Find and print the code stored in D6
+            
+            MOVE.B  #',',(A1)+
+            ADDQ    #1,D1
+            
+            MOVE.L  D5,D6              ; Push D5 into D6
+            LSR.L   #6,D6              ; Shift six bits to the right
+            ANDI.L  #$003F,D6          ; Isolate the Dst EA bits
+            JSR EAGETDSTEA
+            
             RTS
 MOVEW
             MOVE.L  #'MOVE',(A1)+
             MOVE.W  #'.W',(A1)+
             ADDQ    #6,D1           ; We added 6 new characters to our IOStringLoc 
+            
+            MOVE.L  #'    ',(A1)+       ; Add a spacer into our IOStringLoc
+            ADDQ    #4,D1               ; We added 4 bytes, aka 4 spaces
+            
+            MOVE.L  D5,D6              ; Push D5 into D6
+            ANDI.L  #$003F,D6          ; Isolate the Src EA bits 
+            JSR EAGETSRCEA             ; Find and print the code stored in D6
+            
+            MOVE.B  #',',(A1)+
+            ADDQ    #1,D1
+            
+            MOVE.L  D5,D6              ; Push D5 into D6
+            LSR.L   #6,D6              ; Shift six bits to the right
+            ANDI.L  #$003F,D6          ; Isolate the Dst EA bits
+            JSR EAGETDSTEA
+            
             RTS
 MOVEL
             MOVE.L  #'MOVE',(A1)+
             MOVE.W  #'.L',(A1)+
             ADDQ    #6,D1           ; We added 6 new characters to our IOStringLoc 
+            
+            MOVE.L  #'    ',(A1)+       ; Add a spacer into our IOStringLoc
+            ADDQ    #4,D1               ; We added 4 bytes, aka 4 spaces
+            
+            MOVE.L  D5,D6              ; Push D5 into D6
+            ANDI.L  #$003F,D6          ; Isolate the Src EA bits 
+            JSR EAGETSRCEA             ; Find and print the code stored in D6
+            
+            MOVE.B  #',',(A1)+
+            ADDQ    #1,D1
+            
+            MOVE.L  D5,D6              ; Push D5 into D6
+            LSR.L   #6,D6              ; Shift six bits to the right
+            ANDI.L  #$003F,D6          ; Isolate the Dst EA bits
+            JSR EAGETDSTEA
+            
             RTS
 
 UNKNOWN
             MOVE.L  #'????',(A1)+
             ADDQ    #4,D1           ; We added 4 new characters to our IOStringLoc 
+            
+            MOVE.L  #'    ',(A1)+       ; Add a spacer into our IOStringLoc
+            ADDQ    #4,D1               ; We added 4 bytes, aka 4 spaces
+            MOVE.W  #'  ',(A1)+         ; Add a spacer into our IOStringLoc
+            ADDQ    #2,D1               ; We added 2 bytes, aka 2 spaces
+        
             RTS
 * Put variables and constants here
+
 
 
 
