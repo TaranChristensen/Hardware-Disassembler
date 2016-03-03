@@ -1,6 +1,6 @@
 00001000 Starting Address
 Assembler used: EASy68K Editor/Assembler v5.15.04
-Created On: 2/27/2016 7:00:33 PM
+Created On: 3/1/2016 6:15:00 PM
 
 00000000                             1  *-----------------------------------------------------------
 00000000                             2  * Title      : IO
@@ -11,11 +11,11 @@ Created On: 2/27/2016 7:00:33 PM
 00000000                             7  
 00000000                             8  * Put program code here
 00000000                             9  *-------Code for output-------
-00000000  43F9 00000136             10  IOINTRO LEA     IntroMsg,A1      Display the intro
+00000000  43F9 0000011C             10  IOINTRO LEA     IntroMsg,A1      Display the intro
 00000006  103C 000E                 11          MOVE.B  #14, D0
 0000000A  4E4F                      12          TRAP    #15
 0000000C                            13  
-0000000C  43F9 00000153             14  IOLOOP  LEA     HexStart,A1        Display the prompt and loop it
+0000000C  43F9 00000139             14  IOLOOP  LEA     HexStart,A1        Display the prompt and loop it
 00000012  103C 000E                 15          MOVE.B  #14,D0          
 00000016  4E4F                      16          TRAP    #15       
 00000018                            17  
@@ -25,7 +25,7 @@ Created On: 2/27/2016 7:00:33 PM
 00000022  4E4F                      21          TRAP    #15             ;
 00000024                            22          
 00000024  B2BC 00000001             23          CMP.L   #1,D1           ; Compares D1 to the number 1 (eg. String length of 1)
-0000002A  6700 00F4                 24          BEQ     IODONE          ; Branch to DONE if they are equal
+0000002A  6700 00DA                 24          BEQ     IODONE          ; Branch to DONE if they are equal
 0000002E                            25          
 0000002E  4284                      26          CLR.L   D4              ; Ensure our counter (D4) is 0      
 00000030                            27              
@@ -40,8 +40,8 @@ Created On: 2/27/2016 7:00:33 PM
 00000044  B204                      36                  CMP.B   D4,D1           ; See if we've read all the characters
 00000046  66E8                      37                  BNE.S   IOASCIItoHEX    ; Continue if we haven't
 00000048                            38              
-00000048  23FC 00000000 000001CC    39          MOVE.L  #0,StartAddress
-00000052  23C2 000001CC             40          MOVE.L  D2,StartAddress     ; Store our StartAddress
+00000048  23FC 00000000 000001B2    39          MOVE.L  #0,StartAddress
+00000052  23C2 000001B2             40          MOVE.L  D2,StartAddress     ; Store our StartAddress
 00000058                            41          
 00000058  4281                      42          CLR.L   D1
 0000005A                            43          
@@ -49,102 +49,98 @@ Created On: 2/27/2016 7:00:33 PM
 0000005A  23FC 00000000 00000100    45          MOVE.L  #0,IOStringLoc      ; == Testing Purposes; not nessessary ==   
 00000064                            46          
 00000064                            47          ; <Testing section>        
-00000064  2479 000001CC             48          MOVE.L  StartAddress,A2     ; Push our start address into A2 
-0000006A  24FC 12000000             49          MOVE.L  #$12000000,(A2)+    ; Push OpCode for Move.B D0,D1 into our start address
-00000070  24FC 32000000             50          MOVE.L  #$32000000,(A2)+    ; Push OpCode for Move.W D0,D1 into our start address
-00000076  24FC 22000000             51          MOVE.L  #$22000000,(A2)+    ; Push OpCode for Move.L D0,D1 into our start address
-0000007C                            52          ; </Testing section>
-0000007C                            53          
-0000007C  2479 000001CC             54          MOVE.L  StartAddress,A2     ; Push our start address into A2 
-00000082  43F9 00000100             55          LEA     IOStringLoc,A1      ; Load our IOStringLoc into A1 for string contruction purposes
-00000088                            56          
-00000088  22FC 23232323             57          MOVE.L  #'####',(A1)+            ; Move our "OpCode location" into our IOStringLoc <---- THIS NEEDS TO BE HEX
-0000008E  5841                      58          ADDQ    #4,D1               ; We added 4 new characters                     <---- THIS NEEDS TO BE 8
-00000090  22FC 20202020             59          MOVE.L  #'    ',(A1)+        ; Add a spacer into our IOStringLoc
-00000096  5841                      60          ADDQ    #4,D1               ; We added 4 bytes, aka 4 spaces
-00000098                            61          
-00000098                            62          ; Here we could loop all of the addresses of A2 until End, or something.
+00000064  2479 000001B2             48          MOVE.L  StartAddress,A2     ; Push our start address into A2 
+0000006A  34FC FFFF                 49          MOVE.W  #$FFFF,(A2)+    ; Push OpCode for Move.B D0,D1 into our start address
+0000006E  34FC 3200                 50          MOVE.W  #$3200,(A2)+    ; Push OpCode for Move.W D0,D1 into our start address
+00000072  34FC 2200                 51          MOVE.W  #$2200,(A2)+    ; Push OpCode for Move.L D0,D1 into our start address
+00000076                            52          ; </Testing section>
+00000076                            53          
+00000076  2479 000001B2             54          MOVE.L  StartAddress,A2     ; Push our start address into A2 
+0000007C  43F9 00000100             55          LEA     IOStringLoc,A1      ; Load our IOStringLoc into A1 for string contruction purposes
+00000082                            56          
+00000082                            57          ; Here we could loop all of the addresses of A2 until End, or something.
+00000082  22FC 23232323             58          MOVE.L  #'####',(A1)+       ; Move our "OpCode location" into our IOStringLoc <---- THIS NEEDS TO BE HEX
+00000088  5841                      59          ADDQ    #4,D1               ; We added 4 new characters                       <---- THIS NEEDS TO BE 8
+0000008A  22FC 20202020             60          MOVE.L  #'    ',(A1)+       ; Add a spacer into our IOStringLoc
+00000090  5841                      61          ADDQ    #4,D1               ; We added 4 bytes, aka 4 spaces
+00000092                            62          
 Line 63 ERROR: Undefined symbol
-00000098  4EB9 004DBB8E             63          JSR OPGETCODE               ; Get the OpCode pointed at by A2, it's string stored in IOStringLoc
-0000009E                            64          
-0000009E  22FC 20202020             65          MOVE.L  #'    ',(A1)+       ; Add a spacer into our IOStringLoc
-000000A4  5841                      66          ADDQ    #4,D1               ; We added 4 bytes, aka 4 spaces
-000000A6                            67          
-000000A6  43F9 00000100             68          LEA     IOStringLoc,A1      ; Now that we've populated the string, load it's beginning
-000000AC  103C 0001                 69          MOVE.B  #1,D0               ; Trap task 1 prints a string at A1 with #D1 bytes.
-000000B0  4E4F                      70          TRAP    #15
-000000B2                            71          
-000000B2  43F9 000001B7             72          LEA     UnkEA,A1            ; TEMPORARY Print "<EA>,<EA>"
-000000B8  103C 000D                 73          MOVE.B  #13,D0              ;
-000000BC  4E4F                      74          TRAP    #15                 ;
-000000BE                            75          
-000000BE  43F9 000001B1             76          LEA     SPC,A1              ; Puts the space before the opCode
-000000C4  103C 000D                 77          MOVE.B  #13,D0
-000000C8  4E4F                      78          TRAP    #15
-000000CA                            79          ; ==== END OUTPUT OPCODE ====
-000000CA                            80  
-000000CA  43F9 000001A3             81          LEA     RES,A1          ; Output the beginning of the message
-000000D0  103C 000E                 82          MOVE.B  #14,D0  
-000000D4  4E4F                      83          TRAP    #15
-000000D6                            84  
-000000D6                            85          ; ==== OUTPUT USER INPUT ====
-000000D6                            86          ; The following outputs the input, converting what we've saved in HEX to ASCII
-000000D6                            87          ; We won't need this in the final version, but the below code should be handy
-000000D6                            88          ;  for print out EA values
-000000D6  2439 000001CC             89          MOVE.L  StartAddress,D2 ; Ensure our address is actually at D2
-000000DC  7208                      90          MOVEQ   #8,D1           ; There are 8 characters in the hex of our address
-000000DE  4284                      91          CLR.L   D4              ; Ensure our counter (D4) is 0
-000000E0  43F9 00000100             92          LEA     IOStringLoc,A1  ; Load our IO String location, to store our output at  
-000000E6                            93          
-000000E6  5244                      94  IOHEXtoASCII    ADDQ    #1,D4
-000000E8  E99A                      95                  ROL.L   #4,D2           ; Get the left-most nyblle to the front..
-000000EA  1602                      96                  MOVE.B  D2,D3           ; .. Put the front-most byte into D3    
-000000EC  C63C 000F                 97                  AND.B   #$0F,D3         ; Distill D3 down to the original left-most nybble
-000000F0  B63C 0009                 98                  CMP.B   #9,D3           ; See if our number is greater than 9..
-000000F4  6F00 0004                 99                  BLE     IODIGIT         ; If it is 9 or less, it's a digit..
-000000F8  5E03                     100                  ADD.B   #7,D3           ; Otherwise it is a digit, and needs an additional 7
-000000FA  0603 0030                101  IODIGIT         ADD.B   #48,D3          ; We now how the nybble's ASCII code
-000000FE  12C3                     102                  MOVE.B  D3,(A1)+        ; Move the ASCII code into the output string at A1
-00000100  B204                     103                  CMP.B   D4,D1           ; See if we've read all the characters
-00000102  66E2                     104                  BNE.S   IOHEXtoASCII    ; Continue if we haven't
-00000104                           105          
-00000104  43F9 00000100            106          LEA     IOStringLoc,A1  ; Now that we've populated the string, load it's beginning
-0000010A  103C 0001                107          MOVE.B  #1,D0           ; Trap task 1 prints a string at A1 with #D1 bytes.
-0000010E  4E4F                     108          TRAP    #15
-00000110                           109          ; ==== END OUTPUT USER INPUT ====
-00000110                           110  
-00000110  43F9 000001B1            111          LEA     SPC,A1          Puts the space after the number
-00000116  103C 000D                112          MOVE.B  #13,D0
-0000011A  4E4F                     113          TRAP    #15
-0000011C                           114  
-0000011C  6000 FEEE                115          BRA     IOLOOP
-00000120                           116          
-00000120                           117  *-------Finishes the program-        
-00000120  43F9 000001C1            118  IODONE  LEA     OUTRO,A1        Display the ending message 
-00000126  103C 000E                119          MOVE.B  #14,D0
-0000012A  4E4F                     120          TRAP    #15
-0000012C  103C 0009                121          MOVE.B  #9,D0
-00000130  4E4F                     122          TRAP    #15             Halt Simulator
-00000132                           123          
-00000132  FFFF FFFF                124          SIMHALT
-00000136                           125          
-00000136  =0000000D                126  CR              EQU     $0D         
-00000136  =0000000A                127  LF              EQU     $0A 
-00000136  =00000100                128  IOStringLoc     EQU     $0100   ; This is where we will store the string of the user input, and other strings
-00000136                           129  
-00000136                           130  *-------Various outputs------
-00000136= 54 65 61 6D 20 43 ...    131  IntroMsg        DC.B    'Team Circles Disassembler ',CR,LF,0     Intro
-00000153= 50 6C 65 61 73 65 ...    132  HexStart        DC.B    'Please enter a full hexidecimal address to get started, or',CR,LF,'type in 0 to quit: ',0         Prompt for the user
-000001A3= 59 6F 75 20 74 79 ...    133  RES             DC.B    'You typed in ',0                        Response to the user
-000001B1= 20 20 20 20 20 00        134  SPC             DC.B    '     ',0                                tab
-000001B7= 3C 45 41 3E 2C 3C ...    135  UnkEA           DC.B    '<EA>,<EA>',0                            Interim message for unkown EAs.
-000001C1= 47 6F 6F 64 62 79 ...    136  OUTRO           DC.B    'Goodbye !',0                            Outro message
-000001CC                           137  StartAddress    DS.L    1
-000001D0                           138  
-000001D0                           139  * Put variables and constants herevv
-000001D0                           140  
-000001D0                           141  
-Line 142 WARNING: END directive missing, starting address not set
+00000092  4EB9 004DBB8E             63          JSR OPGETCODE               ; Get the OpCode pointed at by A2, it's string stored in IOStringLoc
+00000098                            64          
+00000098  43F9 00000100             65          LEA     IOStringLoc,A1      ; Now that we've populated the string, load it's beginning
+0000009E  103C 0001                 66          MOVE.B  #1,D0               ; Trap task 1 prints a string at A1 with #D1 bytes.
+000000A2  4E4F                      67          TRAP    #15
+000000A4                            68  
+000000A4  43F9 00000197             69          LEA     SPC,A1              ; Puts the space before the opCode
+000000AA  103C 000D                 70          MOVE.B  #13,D0
+000000AE  4E4F                      71          TRAP    #15
+000000B0                            72          ; ==== END OUTPUT OPCODE ====
+000000B0                            73  
+000000B0  43F9 00000189             74          LEA     RES,A1          ; Output the beginning of the message
+000000B6  103C 000E                 75          MOVE.B  #14,D0  
+000000BA  4E4F                      76          TRAP    #15
+000000BC                            77  
+000000BC                            78          ; ==== OUTPUT USER INPUT ====
+000000BC                            79          ; The following outputs the input, converting what we've saved in HEX to ASCII
+000000BC                            80          ; We won't need this in the final version, but the below code should be handy
+000000BC                            81          ;  for print out EA values
+000000BC  2439 000001B2             82          MOVE.L  StartAddress,D2 ; Ensure our address is actually at D2
+000000C2  7208                      83          MOVEQ   #8,D1           ; There are 8 characters in the hex of our address
+000000C4  4284                      84          CLR.L   D4              ; Ensure our counter (D4) is 0
+000000C6  43F9 00000100             85          LEA     IOStringLoc,A1  ; Load our IO String location, to store our output at  
+000000CC                            86          
+000000CC  5244                      87  IOHEXtoASCII    ADDQ    #1,D4
+000000CE  E99A                      88                  ROL.L   #4,D2           ; Get the left-most nyblle to the front..
+000000D0  1602                      89                  MOVE.B  D2,D3           ; .. Put the front-most byte into D3    
+000000D2  C63C 000F                 90                  AND.B   #$0F,D3         ; Distill D3 down to the original left-most nybble
+000000D6  B63C 0009                 91                  CMP.B   #9,D3           ; See if our number is greater than 9..
+000000DA  6F00 0004                 92                  BLE     IODIGIT         ; If it is 9 or less, it's a digit..
+000000DE  5E03                      93                  ADD.B   #7,D3           ; Otherwise it is a digit, and needs an additional 7
+000000E0  0603 0030                 94  IODIGIT         ADD.B   #48,D3          ; We now how the nybble's ASCII code
+000000E4  12C3                      95                  MOVE.B  D3,(A1)+        ; Move the ASCII code into the output string at A1
+000000E6  B204                      96                  CMP.B   D4,D1           ; See if we've read all the characters
+000000E8  66E2                      97                  BNE.S   IOHEXtoASCII    ; Continue if we haven't
+000000EA                            98          
+000000EA  43F9 00000100             99          LEA     IOStringLoc,A1  ; Now that we've populated the string, load it's beginning
+000000F0  103C 0001                100          MOVE.B  #1,D0           ; Trap task 1 prints a string at A1 with #D1 bytes.
+000000F4  4E4F                     101          TRAP    #15
+000000F6                           102          ; ==== END OUTPUT USER INPUT ====
+000000F6                           103  
+000000F6  43F9 00000197            104          LEA     SPC,A1          Puts the space after the number
+000000FC  103C 000D                105          MOVE.B  #13,D0
+00000100  4E4F                     106          TRAP    #15
+00000102                           107  
+00000102  6000 FF08                108          BRA     IOLOOP
+00000106                           109          
+00000106                           110  *-------Finishes the program-        
+00000106  43F9 000001A7            111  IODONE  LEA     OUTRO,A1        Display the ending message 
+0000010C  103C 000E                112          MOVE.B  #14,D0
+00000110  4E4F                     113          TRAP    #15
+00000112  103C 0009                114          MOVE.B  #9,D0
+00000116  4E4F                     115          TRAP    #15             Halt Simulator
+00000118                           116          
+00000118  FFFF FFFF                117          SIMHALT
+0000011C                           118          
+0000011C  =0000000D                119  CR              EQU     $0D         
+0000011C  =0000000A                120  LF              EQU     $0A 
+0000011C  =00000100                121  IOStringLoc     EQU     $0100   ; This is where we will store the string of the user input, and other strings
+0000011C                           122  
+0000011C                           123  *-------Various outputs------
+0000011C= 54 65 61 6D 20 43 ...    124  IntroMsg        DC.B    'Team Circles Disassembler ',CR,LF,0     Intro
+00000139= 50 6C 65 61 73 65 ...    125  HexStart        DC.B    'Please enter a full hexidecimal address to get started, or',CR,LF,'type in 0 to quit: ',0         Prompt for the user
+00000189= 59 6F 75 20 74 79 ...    126  RES             DC.B    'You typed in ',0                        Response to the user
+00000197= 20 20 20 20 20 00        127  SPC             DC.B    '     ',0                                tab
+0000019D= 3C 45 41 3E 2C 3C ...    128  UnkEA           DC.B    '<EA>,<EA>',0                            Interim message for unkown EAs.
+000001A7= 47 6F 6F 64 62 79 ...    129  OUTRO           DC.B    'Goodbye !',0                            Outro message
+000001B2                           130  StartAddress    DS.L    1
+000001B6                           131  
+000001B6                           132  * Put variables and constants herevv
+000001B6                           133  
+000001B6                           134  
+000001B6                           135  
+000001B6                           136  
+000001B6                           137  
+Line 138 WARNING: END directive missing, starting address not set
 
 1 error detected
 1 warning generated
@@ -154,19 +150,19 @@ SYMBOL TABLE INFORMATION
 Symbol-name         Value
 -------------------------
 CR                  D
-HEXSTART            153
-INTROMSG            136
+HEXSTART            139
+INTROMSG            11C
 IOASCIITOHEX        30
-IODIGIT             FA
-IODONE              120
-IOHEXTOASCII        E6
+IODIGIT             E0
+IODONE              106
+IOHEXTOASCII        CC
 IOINTRO             0
 IOLOOP              C
 IOORTAG             42
 IOSTRINGLOC         100
 LF                  A
-OUTRO               1C1
-RES                 1A3
-SPC                 1B1
-STARTADDRESS        1CC
-UNKEA               1B7
+OUTRO               1A7
+RES                 189
+SPC                 197
+STARTADDRESS        1B2
+UNKEA               19D

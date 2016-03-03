@@ -46,7 +46,7 @@ IOORTAG         OR.B    D3,D2           ; Store our nybble into D2
         
         ; <Testing section>        
         MOVE.L  StartAddress,A2     ; Push our start address into A2 
-        MOVE.W  #$3807,(A2)+    ; Push OpCode for Move.B D0,D1 into our start address
+        MOVE.W  #$C1C1,(A2)+    ; Push OpCode for MULS D1,D0 into our start address
         MOVE.W  #$3200,(A2)+    ; Push OpCode for Move.W D0,D1 into our start address
         MOVE.W  #$2200,(A2)+    ; Push OpCode for Move.L D0,D1 into our start address
         ; </Testing section>
@@ -65,11 +65,7 @@ IOORTAG         OR.B    D3,D2           ; Store our nybble into D2
         LEA     IOStringLoc,A1      ; Now that we've populated the string, load it's beginning
         MOVE.B  #1,D0               ; Trap task 1 prints a string at A1 with #D1 bytes.
         TRAP    #15
-        
-        ;LEA     UnkEA,A1            ; TEMPORARY Print "<EA>,<EA>"
-        ;MOVE.B  #13,D0              ;
-        ;TRAP    #15                 ;
-        
+
         LEA     SPC,A1              ; Puts the space before the opCode
         MOVE.B  #13,D0
         TRAP    #15
@@ -134,6 +130,9 @@ OUTRO           DC.B    'Goodbye !',0                            Outro message
 StartAddress    DS.L    1
 
 * Put variables and constants herevv
+
+
+
 
 
 

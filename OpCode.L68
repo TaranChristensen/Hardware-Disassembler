@@ -1,6 +1,6 @@
 00001000 Starting Address
 Assembler used: EASy68K Editor/Assembler v5.15.04
-Created On: 2/27/2016 7:58:51 PM
+Created On: 3/3/2016 3:05:45 PM
 
 00000000                             1  *-----------------------------------------------------------
 00000000                             2  * Title      : OpCode
@@ -13,79 +13,154 @@ Created On: 2/27/2016 7:58:51 PM
 00000000                             9  
 00000000                            10  ; Here we assume that A2 contains the address pointing to our OpCode, and
 00000000                            11  ;  we assume that A1 contains the address pointing to our IOStringLoc
-00000000  2A1A                      12  OPGETCODE   MOVE.L  (A2)+,D5    ; Push our OpCode into D5
+00000000  3A1A                      12  OPGETCODE   MOVE.W  (A2)+,D5    ; Push our OpCode into D5
 00000002  2C05                      13              MOVE.L  D5,D6       ; Also store the OpCode in D6
-00000004  E99E                      14              ROL.L   #4,D6       ; Rotate our OpCode 1 nybble left
-00000006  0206 000F                 15              ANDI.B  #$0F,D6     ; Isolate our opcode nybble
-0000000A  BC3C 0001                 16              CMP.B   #$01,D6     
-0000000E  670E                      17              BEQ.S   MOVEB       ; MOVE.B
-00000010  BC3C 0003                 18              CMP.B   #$03,D6     
-00000014  6730                      19              BEQ.S   MOVEW       ; MOVE.W
-00000016  BC3C 0002                 20              CMP.B   #$02,D6
-0000001A  6740                      21              BEQ.S   MOVEL       ; MOVE.L
-0000001C                            22              
-0000001C  6054                      23              BRA.S   UNKNOWN
-0000001E                            24              
-0000001E                            25  MOVEB
-0000001E  22FC 4D4F5645             26              MOVE.L  #'MOVE',(A1)+
-00000024  32FC 2E42                 27              MOVE.W  #'.B',(A1)+
-00000028  5C41                      28              ADDQ    #6,D1           ; We added 6 new characters to our IOStringLoc 
-0000002A                            29              
-0000002A  22FC 20202020             30              MOVE.L  #'    ',(A1)+     ; Add a spacer into our IOStringLoc
-00000030  5841                      31              ADDQ    #4,D1           ; We added 4 bytes, aka 4 spaces
-00000032                            32              
-Line 33 ERROR: Undefined symbol
-00000032  4EB9 004DBB8E             33              JSR EAGETEA             ; Find and print the code stored in D5
-00000038  12FC 002C                 34              MOVE.B  #',',(A1)+
-0000003C  5241                      35              ADDQ    #1,D1
-Line 36 ERROR: Undefined symbol
-0000003E  4EB9 004DBB8E             36              JSR EAGETEA
-00000044                            37              
-00000044  4E75                      38              RTS
-00000046                            39  MOVEW
-00000046  22FC 4D4F5645             40              MOVE.L  #'MOVE',(A1)+
-0000004C  32FC 2E57                 41              MOVE.W  #'.W',(A1)+
-00000050  5C41                      42              ADDQ    #6,D1           ; We added 6 new characters to our IOStringLoc 
-00000052                            43              
-00000052  22FC 20202020             44              MOVE.L  #'    ',(A1)+       ; Add a spacer into our IOStringLoc
-00000058  5841                      45              ADDQ    #4,D1               ; We added 4 bytes, aka 4 spaces
-0000005A                            46              
-0000005A  4E75                      47              RTS
-0000005C                            48  MOVEL
-0000005C  22FC 4D4F5645             49              MOVE.L  #'MOVE',(A1)+
-00000062  32FC 2E4C                 50              MOVE.W  #'.L',(A1)+
-00000066  5C41                      51              ADDQ    #6,D1           ; We added 6 new characters to our IOStringLoc 
-00000068                            52              
-00000068  22FC 20202020             53              MOVE.L  #'    ',(A1)+       ; Add a spacer into our IOStringLoc
-0000006E  5841                      54              ADDQ    #4,D1               ; We added 4 bytes, aka 4 spaces
-00000070                            55          
-00000070  4E75                      56              RTS
-00000072                            57  
-00000072                            58  UNKNOWN
-00000072  22FC 3F3F3F3F             59              MOVE.L  #'????',(A1)+
-00000078  5841                      60              ADDQ    #4,D1           ; We added 4 new characters to our IOStringLoc 
-0000007A                            61              
-0000007A  22FC 20202020             62              MOVE.L  #'    ',(A1)+       ; Add a spacer into our IOStringLoc
-00000080  5841                      63              ADDQ    #4,D1               ; We added 4 bytes, aka 4 spaces
-00000082  32FC 2020                 64              MOVE.W  #'  ',(A1)+         ; Add a spacer into our IOStringLoc
-00000086  5441                      65              ADDQ    #2,D1               ; We added 2 bytes, aka 2 spaces
-00000088                            66          
-00000088  4E75                      67              RTS
-0000008A                            68  * Put variables and constants here
-0000008A                            69  
-0000008A                            70  
-0000008A                            71  
-Line 72 WARNING: END directive missing, starting address not set
+00000004  E09E                      14              ROR.L   #8,D6       ; Rotate our OpCode to right-most nybble
+00000006  E89E                      15              ROR.L   #4,D6       ; 
+00000008  0206 000F                 16              ANDI.B  #$0F,D6     ; Isolate our opcode nybble
+0000000C  BC3C 0001                 17              CMP.B   #$01,D6     
+00000010  6700 001E                 18              BEQ     MOVEB       ; MOVE.B
+00000014  BC3C 0003                 19              CMP.B   #$03,D6     
+00000018  6700 0050                 20              BEQ     MOVEW       ; MOVE.W
+0000001C  BC3C 0002                 21              CMP.B   #$02,D6
+00000020  6700 0082                 22              BEQ     MOVEL       ; MOVE.L
+00000024  BC3C 000C                 23              CMP.B   #$0C,D6
+00000028  6700 00B4                 24              BEQ     MULSAND     ; MULS or AND opcodes
+0000002C  6000 00FA                 25              BRA     UNKNOWN
+00000030                            26              
+00000030                            27  MOVEB
+00000030  22FC 4D4F5645             28              MOVE.L  #'MOVE',(A1)+
+00000036  32FC 2E42                 29              MOVE.W  #'.B',(A1)+
+0000003A  5C41                      30              ADDQ    #6,D1              ; We added 6 new characters to our IOStringLoc 
+0000003C                            31              
+0000003C  22FC 20202020             32              MOVE.L  #'    ',(A1)+      ; Add a spacer into our IOStringLoc
+00000042  5841                      33              ADDQ    #4,D1              ; We added 4 bytes, aka 4 spaces
+00000044                            34              
+00000044  2C05                      35              MOVE.L  D5,D6              ; Push D5 into D6
+00000046  0286 0000003F             36              ANDI.L  #$003F,D6          ; Isolate the Src EA bits 
+Line 37 ERROR: Undefined symbol
+0000004C  4EB9 004DBB8E             37              JSR EAGETSRCEA             ; Find and print the code stored in D6
+00000052                            38              
+00000052  12FC 002C                 39              MOVE.B  #',',(A1)+
+00000056  5241                      40              ADDQ    #1,D1
+00000058                            41              
+00000058  2C05                      42              MOVE.L  D5,D6              ; Push D5 into D6
+0000005A  EC8E                      43              LSR.L   #6,D6              ; Shift six bits to the right
+0000005C  0286 0000003F             44              ANDI.L  #$003F,D6          ; Isolate the Dst EA bits
+Line 45 ERROR: Undefined symbol
+00000062  4EB9 004DBB8E             45              JSR EAGETDSTEA
+00000068                            46              
+00000068  4E75                      47              RTS
+0000006A                            48  MOVEW
+0000006A  22FC 4D4F5645             49              MOVE.L  #'MOVE',(A1)+
+00000070  32FC 2E57                 50              MOVE.W  #'.W',(A1)+
+00000074  5C41                      51              ADDQ    #6,D1               ; We added 6 new characters to our IOStringLoc 
+00000076                            52              
+00000076  22FC 20202020             53              MOVE.L  #'    ',(A1)+       ; Add a spacer into our IOStringLoc
+0000007C  5841                      54              ADDQ    #4,D1               ; We added 4 bytes, aka 4 spaces
+0000007E                            55              
+0000007E  2C05                      56              MOVE.L  D5,D6               ; Push D5 into D6
+00000080  0286 0000003F             57              ANDI.L  #$003F,D6           ; Isolate the Src EA bits 
+Line 58 ERROR: Undefined symbol
+00000086  4EB9 004DBB8E             58              JSR EAGETSRCEA              ; Find and print the code stored in D6
+0000008C                            59              
+0000008C  12FC 002C                 60              MOVE.B  #',',(A1)+
+00000090  5241                      61              ADDQ    #1,D1
+00000092                            62              
+00000092  2C05                      63              MOVE.L  D5,D6               ; Push D5 into D6
+00000094  EC8E                      64              LSR.L   #6,D6               ; Shift six bits to the right
+00000096  0286 0000003F             65              ANDI.L  #$003F,D6           ; Isolate the Dst EA bits
+Line 66 ERROR: Undefined symbol
+0000009C  4EB9 004DBB8E             66              JSR EAGETDSTEA
+000000A2                            67              
+000000A2  4E75                      68              RTS
+000000A4                            69  MOVEL
+000000A4  22FC 4D4F5645             70              MOVE.L  #'MOVE',(A1)+
+000000AA  32FC 2E4C                 71              MOVE.W  #'.L',(A1)+
+000000AE  5C41                      72              ADDQ    #6,D1               ; We added 6 new characters to our IOStringLoc 
+000000B0                            73              
+000000B0  22FC 20202020             74              MOVE.L  #'    ',(A1)+       ; Add a spacer into our IOStringLoc
+000000B6  5841                      75              ADDQ    #4,D1               ; We added 4 bytes, aka 4 spaces
+000000B8                            76              
+000000B8  2C05                      77              MOVE.L  D5,D6               ; Push D5 into D6
+000000BA  0286 0000003F             78              ANDI.L  #$003F,D6           ; Isolate the Src EA bits 
+Line 79 ERROR: Undefined symbol
+000000C0  4EB9 004DBB8E             79              JSR EAGETSRCEA              ; Find and print the code stored in D6
+000000C6                            80              
+000000C6  12FC 002C                 81              MOVE.B  #',',(A1)+
+000000CA  5241                      82              ADDQ    #1,D1
+000000CC                            83              
+000000CC  2C05                      84              MOVE.L  D5,D6               ; Push D5 into D6
+000000CE  EC8E                      85              LSR.L   #6,D6               ; Shift six bits to the right
+000000D0  0286 0000003F             86              ANDI.L  #$003F,D6           ; Isolate the Dst EA bits
+Line 87 ERROR: Undefined symbol
+000000D6  4EB9 004DBB8E             87              JSR EAGETDSTEA
+000000DC                            88              
+000000DC  4E75                      89              RTS
+000000DE                            90         
+000000DE                            91  ; This label determines if the code is either MULS or AND, by looking at it's size bits     
+000000DE  2C05                      92  MULSAND     MOVE.L  D5,D6               ; Copy D5 into D6
+000000E0  EC8E                      93              LSR.L   #6,D6               ; Shift the size bits to the far right
+000000E2  0206 0003                 94              ANDI.B  #$3,D6              ; Isolate the size bits
+000000E6  BC3C 0003                 95              CMP.B   #3,D6               ; See if the size is '11'..
+000000EA  6704                      96              BEQ.S   MULS                ; ..If so, it's a MULS opcode
+000000EC  6000 0038                 97              BRA     AND                 ; Otherwise, it's an AND code
+000000F0                            98          
+000000F0  22FC 4D554C53             99  MULS        MOVE.L  #'MULS',(A1)+
+000000F6  5841                     100              ADDQ    #4,D1               ; We added 4 new characters to our IOStringLoc
+000000F8                           101              
+000000F8  22FC 20202020            102              MOVE.L  #'    ',(A1)+       ; Add a spacer into our IOStringLoc
+000000FE  5841                     103              ADDQ    #4,D1               ; We added 4 bytes, aka 4 spaces
+00000100                           104              
+00000100  2C05                     105              MOVE.L  D5,D6               ; Copy D5 into D6
+00000102  0286 0000003F            106              ANDI.L  #$003F,D6           ; Isolate the Src EA bits
+Line 107 ERROR: Undefined symbol
+00000108  4EF9 004DBB8E            107              JMP EAGETSRCEA
+0000010E                           108              
+0000010E  12FC 002C                109              MOVE.B  #',',(A1)+
+00000112  5241                     110              ADDQ    #1,D1
+00000114                           111              
+00000114  2C05                     112              MOVE.L  D5,D6               ; Copy D5 into D6
+00000116  EF8E                     113              LSL.L   #7,D6               ; Rotate 7 bits to the left (Dn Dst bits)
+00000118  0286 00000003            114              ANDI.L  #$0003,D6           ; Isolate the Dn Destination bits
+Line 115 ERROR: Undefined symbol
+0000011E  4EF9 004DBB8E            115              JMP EADN
+00000124                           116              
+00000124  4E75                     117              RTS
+00000126                           118              
+00000126                           119  ; At this point, we know D6 is the size of our opcode
+00000126                           120  AND
+00000126                           121                   
+00000126  4E75                     122              RTS
+00000128                           123  UNKNOWN
+00000128  22FC 3F3F3F3F            124              MOVE.L  #'????',(A1)+
+0000012E  5841                     125              ADDQ    #4,D1           ; We added 4 new characters to our IOStringLoc 
+00000130                           126              
+00000130  22FC 20202020            127              MOVE.L  #'    ',(A1)+       ; Add a spacer into our IOStringLoc
+00000136  5841                     128              ADDQ    #4,D1               ; We added 4 bytes, aka 4 spaces
+00000138  32FC 2020                129              MOVE.W  #'  ',(A1)+         ; Add a spacer into our IOStringLoc
+0000013C  5441                     130              ADDQ    #2,D1               ; We added 2 bytes, aka 2 spaces
+0000013E                           131          
+0000013E  4E75                     132              RTS
+00000140                           133  * Put variables and constants here
+00000140                           134  
+00000140                           135  
+00000140                           136  
+00000140                           137  
+Line 138 WARNING: END directive missing, starting address not set
 
-2 errors detected
+8 errors detected
 1 warning generated
 
 
 SYMBOL TABLE INFORMATION
 Symbol-name         Value
 -------------------------
-MOVEB               1E
-MOVEL               5C
-MOVEW               46
+AND                 126
+MOVEB               30
+MOVEL               A4
+MOVEW               6A
+MULS                F0
+MULSAND             DE
 OPGETCODE           0
-UNKNOWN             72
+UNKNOWN             128
