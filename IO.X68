@@ -78,55 +78,7 @@ IOORTAG         OR.B    D3,D2              Store our nybble into D2
                 CMP.B   D4,D1              See if we've read all the characters
                 BNE.S   IOASCIItoHEX       Continue if we haven't
             
-<<<<<<< HEAD
-        MOVE.L  #0,StartAddress
-        MOVE.L  D2,StartAddress     ; Store our StartAddress
-        
-        CLR.L   D1
-        
-        ; ==== OUTPUT OPCODE ===    
-        MOVE.L  #0,IOStringLoc      ; == Testing Purposes; not nessessary ==   
-        
-        ; <Testing section>        
-        MOVE.L  StartAddress,A2     ; Push our start address into A2 
-        MOVE.W  #$C1C1,(A2)+    ; Push OpCode for MULS D1,D0 into our start address
-        MOVE.W  #$3200,(A2)+    ; Push OpCode for Move.W D0,D1 into our start address
-        MOVE.W  #$2200,(A2)+    ; Push OpCode for Move.L D0,D1 into our start address
-        ; </Testing section>
-        
-        MOVE.L  StartAddress,A2     ; Push our start address into A2 
-        LEA     IOStringLoc,A1      ; Load our IOStringLoc into A1 for string contruction purposes
-        
-        ; Here we could loop all of the addresses of A2 until End, or something.
-        MOVE.L  #'####',(A1)+       ; Move our "OpCode location" into our IOStringLoc <---- THIS NEEDS TO BE HEX
-        ADDQ    #4,D1               ; We added 4 new characters                       <---- THIS NEEDS TO BE 8
-        MOVE.L  #'    ',(A1)+       ; Add a spacer into our IOStringLoc
-        ADDQ    #4,D1               ; We added 4 bytes, aka 4 spaces
-        
-        JSR OPGETCODE               ; Get the OpCode pointed at by A2, it's string stored in IOStringLoc
-        
-        LEA     IOStringLoc,A1      ; Now that we've populated the string, load it's beginning
-        MOVE.B  #1,D0               ; Trap task 1 prints a string at A1 with #D1 bytes.
-        TRAP    #15
-
-        LEA     SPC,A1              ; Puts the space before the opCode
-        MOVE.B  #13,D0
-        TRAP    #15
-        ; ==== END OUTPUT OPCODE ====
-
-        LEA     RES,A1          ; Output the beginning of the message
-        MOVE.B  #14,D0  
-        TRAP    #15
-
-        ; ==== OUTPUT USER INPUT ====
-        ; The following outputs the input, converting what we've saved in HEX to ASCII
-        ; We won't need this in the final version, but the below code should be handy
-        ;  for print out EA values
-        MOVE.L  StartAddress,D2 ; Ensure our address is actually at D2
-        MOVEQ   #8,D1           ; There are 8 characters in the hex of our address
-        CLR.L   D4              ; Ensure our counter (D4) is 0
-        LEA     IOStringLoc,A1  ; Load our IO String location, to store our output at  
-=======
+  
                 MOVE.L  #0,StartAddress
                 MOVE.L  D2,StartAddress    Store our StartAddress
                 
@@ -139,7 +91,7 @@ OUTPUTOPCODE    MOVE.L  #0,IOStringLoc     ********** Testing purposes *********
         
                 ; <Testing section>        
                 MOVE.L  StartAddress,A2    Push our start address into A2 
-                MOVE.W  #$3807,(A2)+       Push OpCode for Move.B D0,D1 into our start address
+                MOVE.W  #$C1C1,(A2)+       Push OpCode for MULS D1,D0 into our start address
                 MOVE.W  #$3200,(A2)+       Push OpCode for Move.W D0,D1 into our start address
                 MOVE.W  #$2200,(A2)+       Push OpCode for Move.L D0,D1 into our start address
                 ; </Testing section>
@@ -180,7 +132,7 @@ OUTPUTOPCODE    MOVE.L  #0,IOStringLoc     ********** Testing purposes *********
                 MOVEQ   #8,D1              There are 8 characters in the hex of our address
                 CLR.L   D4                 Ensure our counter (D4) is 0
                 LEA     IOStringLoc,A1     Load our IO String location, to store our output at  
->>>>>>> origin/master
+
         
 IOHEXtoASCII    ADDQ    #1,D4
                 ROL.L   #4,D2              Get the left-most nyblle to the front..
@@ -230,21 +182,6 @@ StartAddress    DS.L    1
 
 * Put variables and constants herevv
 
-
-
-
-
-
-
-<<<<<<< HEAD
-=======
-
-
-
-
-
-
->>>>>>> origin/master
 *~Font name~Courier New~
 *~Font size~10~
 *~Tab type~1~
