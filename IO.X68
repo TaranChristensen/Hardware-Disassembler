@@ -15,14 +15,57 @@ IOLOOP          LEA     HexStart,A1        Display the prompt and loop it
                 TRAP    #15       
 
 *-------Code for input-------
-                LEA  IOStringLoc,A1        Store the string of our user input at StartAddress,A1 
+                LEA     IOStringLoc,A1     Store the string of our user input at StartAddress,A1 
                 MOVE.B  #2,D0              uses Trap #15, Task 2
                 TRAP    #15              
         
                 CMP.L   #1,D1              Compares D1 to the number 1 (eg. String length of 1)
                 BEQ     IODONE             Branch to DONE if they are equal
         
-                CLR.L   D4                 Ensure our counter (D4) is 0      
+                CLR.L   D4                 Ensure our counter (D4) is 0 
+
+                JSR     LENGTH_CHECK   
+                CMP.B   #1,D5              if 1 then it passed the tests         
+
+                BEQ     IOASCIItoHEX
+                BRA     IOLOOP
+
+  
+                
+LENGTH_CHECK    CLR.L   D5                 store the result of the test
+                MOVEQ   #$0,D6             make D6 0
+                CMP.B   D6,D1              see if null
+                BEQ     BAD_LENGTH         if null then branch to bad input
+                CMPI    #$8,D1             see if it is more than 8 characters long
+                BGT     BAD_LENGTH         if more than 8 branch to bad input
+                MOVE.B  #$1,D5             passed the length checks so move 1
+                RTS                        go back
+                
+BAD_LENGTH      MOVEQ   #$0,D5             did not pass the test
+                LEA     FAIL_INPUT,A1      load bad input message
+                MOVE.B  #14,D0          
+                TRAP    #15 
+                RTS                        go back
+                
+TEST_ODD        CLR.L   D6           
+                CLR.L   D7
+                MOVE.L  #$00000002,D6      divide by 2 to see remainder
+                MOVE.L  D2,D7              create a copy of the input in D7
+                DIVU    D6,D7              divide the hex number by 2
+                SWAP    D7                 put the remainder on the far left
+                CMP.B   #1,D7              see if the remainder is one
+                BEQ     BAD_EVEN           branch to to even
+                CLR.L   D6
+                CLR.L   D7
+                BRA     OUTPUTOPCODE       was even so keep going
+                
+BAD_EVEN        CLR.L   D6
+                CLR.L   D7
+                LEA     FAIL_INPUT,A1      load bad input message  
+                MOVE.B  #14,D0          
+                TRAP    #15 
+                BRA     IOLOOP             go back to the beginning
+                
             
 IOASCIItoHEX    ADDQ    #1,D4
                 LSL.L   #4,D2              Scoot D2 a nybble
@@ -37,11 +80,13 @@ IOORTAG         OR.B    D3,D2              Store our nybble into D2
             
                 MOVE.L  #0,StartAddress
                 MOVE.L  D2,StartAddress    Store our StartAddress
-        
+                
+                BRA     TEST_ODD
+                
                 CLR.L   D1
         
 *-------Output Opcode------- 
-                MOVE.L  #0,IOStringLoc     ********** Testing purposes ********** 
+OUTPUTOPCODE    MOVE.L  #0,IOStringLoc     ********** Testing purposes ********** 
         
                 ; <Testing section>        
                 MOVE.L  StartAddress,A2    Push our start address into A2 
@@ -60,7 +105,7 @@ IOORTAG         OR.B    D3,D2              Store our nybble into D2
                 ADDQ    #4,D1              We added 4 bytes, aka 4 spaces
         
                 JSR OPGETCODE              Get the OpCode pointed at by A2, it's string stored in IOStringLoc
-        
+                
                 LEA     IOStringLoc,A1     Now that we've populated the string, load it's beginning
                 MOVE.B  #1,D0              Trap task 1 prints a string at A1 with #D1 bytes.
                 TRAP    #15
@@ -125,14 +170,23 @@ IOStringLoc     EQU     $0100              This is where we will store the strin
 
 *-------Various outputs------
 IntroMsg        DC.B    'Team Circles Disassembler ',CR,LF,0     Intro
-HexStart        DC.B    'Please enter a full hexidecimal address to get started, or',CR,LF,'type in 0 to quit: ',0         Prompt for the user
+HexStart        DC.B    'Enter a starting address in hex of length 8 or less and even, or',CR,LF,'type in 0 to quit: ',0 Prompt for the user
 RES             DC.B    'You typed in ',0                        Response to the user
 SPC             DC.B    '     ',0                                tab
 UnkEA           DC.B    '<EA>,<EA>',0                            Interim message for unkown EAs.
 OUTRO           DC.B    'Goodbye !',0                            Outro message
+FAIL_INPUT      DC.B    'I am sorry, but you typed an address that did not meet the criteria',CR,LF,0 
 StartAddress    DS.L    1
 
 * Put variables and constants herevv
+
+
+
+
+
+
+
+
 
 
 
