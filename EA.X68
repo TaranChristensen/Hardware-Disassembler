@@ -24,15 +24,15 @@ EAGETSRCEA
     CMP.B   #1,D7       ; See if the mode == '001'
     BEQ     EAAN        ; Address Register Direct
     
-*    CMP.B   #2,D7       ; See if the mode == '010'
-*    BEQ     EAANI       ; Address Register Indirect
-*    
-*    CMP.B   #3,D7       ; See if the mode == '011'
-*    BEQ     EAAPOST     ; Address Register Indirect with Post increment
-*    
-*    CMP.B   #4,D7       ; See if the mode == '100'
-*    BEQ     EAAPRE      ; Address Register Indirect with Pre increment
-*    
+    CMP.B   #2,D7       ; See if the mode == '010'
+    BEQ     EAANI       ; Address Register Indirect
+    
+    CMP.B   #3,D7       ; See if the mode == '011'
+    BEQ     EAAPOST     ; Address Register Indirect with Post increment
+    
+    CMP.B   #4,D7       ; See if the mode == '100'
+    BEQ     EAAPRE      ; Address Register Indirect with Pre increment
+    
 *    CMP.B   #7,D7       ; See if the mode == '111' 
 *    BEQ     EA111       ; Determine if (Immediate Data, Aboslute Word or Long Address)
 
@@ -49,15 +49,15 @@ EAGETDSTEA
     CMP.B   #1,D7       ; See if the mode == '001'
     BEQ     EAAN        ; Address Register Direct
     
-*    CMP.B   #2,D7       ; See if the mode == '010'
-*    BEQ     EAANI       ; Address Register Indirect
-*    
-*    CMP.B   #3,D7       ; See if the mode == '011'
-*    BEQ     EAAPOST     ; Address Register Indirect with Post increment
-*    
-*    CMP.B   #4,D7       ; See if the mode == '100'
-*    BEQ     EAAPRE      ; Address Register Indirect with Pre increment
-*    
+    CMP.B   #2,D7       ; See if the mode == '010'
+    BEQ     EAANI       ; Address Register Indirect
+    
+    CMP.B   #3,D7       ; See if the mode == '011'
+    BEQ     EAAPOST     ; Address Register Indirect with Post increment
+    
+    CMP.B   #4,D7       ; See if the mode == '100'
+    BEQ     EAAPRE      ; Address Register Indirect with Pre increment
+    
 *    CMP.B   #7,D7       ; See if the mode == '111' 
 *    BEQ     EA111       ; Determine if (Immediate Data, Aboslute Word or Long Address)
 
@@ -80,30 +80,41 @@ EAAN
     ADDQ    #2,D1
     RTS
 
-*;If the EA is a (An) EA    
-*;This method assume D6 contains the Reg for (An)  
-*EAANI
-*    MOVE.B  #'',(A1)+
-*    ADD.B   #48,D6      ; Add 48 into D6 to turn num 0 into ASCII 0
-*    MOVE.B  D6,(A1)+
-*    ADDQ    #2,D1
-*    RTS
-*;If the EA is a (An)+ EA    
-*;This method assume D6 contains the Reg for (An)+  
-*EAAPOST
-*    MOVE.B  #'',(A1)+
-*    ADD.B   #48,D6      ; Add 48 into D6 to turn num 0 into ASCII 0
-*    MOVE.B  D6,(A1)+
-*    ADDQ    #2,D1
-*    RTS
-*;If the EA is a -(An) EA    
-*;This method assume D6 contains the Reg for -(An) 
-*EAAPRE
-*    MOVE.B  #'',(A1)+
-*    ADD.B   #48,D6      ; Add 48 into D6 to turn num 0 into ASCII 0
-*    MOVE.B  D6,(A1)+
-*    ADDQ    #2,D1
-*    RTS  
+;If the EA is a (An) EA    
+;This method assume D6 contains the Reg for (An)  
+EAANI
+    MOVE.B  #'(',(A1)+
+    MOVE.B  #'A',(A1)+
+    MOVE.B  #'#',(A1)+
+    MOVE.B  #')',(A1)+
+    ADD.B   #48,D6      ; Add 48 into D6 to turn num 0 into ASCII 0
+    MOVE.B  D6,(A1)+
+    ADDQ    #4,D1
+    RTS
+;If the EA is a (An)+ EA    
+;This method assume D6 contains the Reg for (An)+  
+EAAPOST
+    MOVE.B  #'(',(A1)+
+    MOVE.B  #'A',(A1)+
+    MOVE.B  #'#',(A1)+
+    MOVE.B  #')',(A1)+
+    MOVE.B  #'+',(A1)+
+    ADD.B   #48,D6      ; Add 48 into D6 to turn num 0 into ASCII 0
+    MOVE.B  D6,(A1)+
+    ADDQ    #5,D1
+    RTS
+;If the EA is a -(An) EA    
+;This method assume D6 contains the Reg for -(An) 
+EAAPRE
+    MOVE.B  #'-',(A1)+
+    MOVE.B  #'(',(A1)+
+    MOVE.B  #'A',(A1)+
+    MOVE.B  #'#',(A1)+
+    MOVE.B  #')',(A1)+
+    ADD.B   #48,D6      ; Add 48 into D6 to turn num 0 into ASCII 0
+    MOVE.B  D6,(A1)+
+    ADDQ    #5,D1
+    RTS 
 *;If the EA is a #<data> EA    
 *;This method assume D6 contains the Reg for #<data>  
 *EAID
@@ -149,6 +160,7 @@ EAUNKN
     RTS
 
 * Put variables and constants here
+
 
 
 
