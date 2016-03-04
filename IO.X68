@@ -78,6 +78,7 @@ IOORTAG         OR.B    D3,D2              Store our nybble into D2
                 CMP.B   D4,D1              See if we've read all the characters
                 BNE.S   IOASCIItoHEX       Continue if we haven't
             
+  
                 MOVE.L  #0,StartAddress
                 MOVE.L  D2,StartAddress    Store our StartAddress
                 
@@ -90,7 +91,7 @@ OUTPUTOPCODE    MOVE.L  #0,IOStringLoc     ********** Testing purposes *********
         
                 ; <Testing section>        
                 MOVE.L  StartAddress,A2    Push our start address into A2 
-                MOVE.W  #$3807,(A2)+       Push OpCode for Move.B D0,D1 into our start address
+                MOVE.W  #$C1C1,(A2)+       Push OpCode for MULS D1,D0 into our start address
                 MOVE.W  #$3200,(A2)+       Push OpCode for Move.W D0,D1 into our start address
                 MOVE.W  #$2200,(A2)+       Push OpCode for Move.L D0,D1 into our start address
                 ; </Testing section>
@@ -131,6 +132,7 @@ OUTPUTOPCODE    MOVE.L  #0,IOStringLoc     ********** Testing purposes *********
                 MOVEQ   #8,D1              There are 8 characters in the hex of our address
                 CLR.L   D4                 Ensure our counter (D4) is 0
                 LEA     IOStringLoc,A1     Load our IO String location, to store our output at  
+
         
 IOHEXtoASCII    ADDQ    #1,D4
                 ROL.L   #4,D2              Get the left-most nyblle to the front..
@@ -179,18 +181,6 @@ FAIL_INPUT      DC.B    'I am sorry, but you typed an address that did not meet 
 StartAddress    DS.L    1
 
 * Put variables and constants herevv
-
-
-
-
-
-
-
-
-
-
-
-
 
 *~Font name~Courier New~
 *~Font size~10~
