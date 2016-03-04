@@ -20,6 +20,22 @@ EAGETSRCEA
     ANDI.L  #$0007,D6   ; Isolate the 3 rightmost bits as 'Reg'
     CMP.B   #0,D7       ; See if the mode == '000'
     BEQ     EADN
+
+    CMP.B   #1,D7       ; See if the mode == '001'
+    BEQ     EAAN        ; Address Register Direct
+    
+*    CMP.B   #2,D7       ; See if the mode == '010'
+*    BEQ     EAANI       ; Address Register Indirect
+*    
+*    CMP.B   #3,D7       ; See if the mode == '011'
+*    BEQ     EAAPOST     ; Address Register Indirect with Post increment
+*    
+*    CMP.B   #4,D7       ; See if the mode == '100'
+*    BEQ     EAAPRE      ; Address Register Indirect with Pre increment
+*    
+*    CMP.B   #7,D7       ; See if the mode == '111' 
+*    BEQ     EA111       ; Determine if (Immediate Data, Aboslute Word or Long Address)
+
     BRA     EAUNKN
 
 ; For this method, D6 is in the format of: <3 bits Dst Reg><3 bits Dst Mode> 
@@ -29,6 +45,22 @@ EAGETDSTEA
     LSR.L   #3,D6       ; Shift D6 to the right 3 bits (D6 Byte = 'Reg')
     CMP.B   #0,D7       ; See if the mode == '000'
     BEQ     EADN
+
+    CMP.B   #1,D7       ; See if the mode == '001'
+    BEQ     EAAN        ; Address Register Direct
+    
+*    CMP.B   #2,D7       ; See if the mode == '010'
+*    BEQ     EAANI       ; Address Register Indirect
+*    
+*    CMP.B   #3,D7       ; See if the mode == '011'
+*    BEQ     EAAPOST     ; Address Register Indirect with Post increment
+*    
+*    CMP.B   #4,D7       ; See if the mode == '100'
+*    BEQ     EAAPRE      ; Address Register Indirect with Pre increment
+*    
+*    CMP.B   #7,D7       ; See if the mode == '111' 
+*    BEQ     EA111       ; Determine if (Immediate Data, Aboslute Word or Long Address)
+
     BRA     EAUNKN
          
 ;If the EA is a Dn EA    
@@ -39,6 +71,73 @@ EADN
     MOVE.B  D6,(A1)+
     ADDQ    #2,D1
     RTS
+;If the EA is a An EA    
+;This method assume D6 contains the Reg for An  
+EAAN
+    MOVE.B  #'A',(A1)+
+    ADD.B   #48,D6      ; Add 48 into D6 to turn num 0 into ASCII 0
+    MOVE.B  D6,(A1)+
+    ADDQ    #2,D1
+    RTS
+
+*;If the EA is a (An) EA    
+*;This method assume D6 contains the Reg for (An)  
+*EAANI
+*    MOVE.B  #'',(A1)+
+*    ADD.B   #48,D6      ; Add 48 into D6 to turn num 0 into ASCII 0
+*    MOVE.B  D6,(A1)+
+*    ADDQ    #2,D1
+*    RTS
+*;If the EA is a (An)+ EA    
+*;This method assume D6 contains the Reg for (An)+  
+*EAAPOST
+*    MOVE.B  #'',(A1)+
+*    ADD.B   #48,D6      ; Add 48 into D6 to turn num 0 into ASCII 0
+*    MOVE.B  D6,(A1)+
+*    ADDQ    #2,D1
+*    RTS
+*;If the EA is a -(An) EA    
+*;This method assume D6 contains the Reg for -(An) 
+*EAAPRE
+*    MOVE.B  #'',(A1)+
+*    ADD.B   #48,D6      ; Add 48 into D6 to turn num 0 into ASCII 0
+*    MOVE.B  D6,(A1)+
+*    ADDQ    #2,D1
+*    RTS  
+*;If the EA is a #<data> EA    
+*;This method assume D6 contains the Reg for #<data>  
+*EAID
+*    MOVE.B  #'',(A1)+
+*    ADD.B   #48,D6      ; Add 48 into D6 to turn num 0 into ASCII 0
+*    MOVE.B  D6,(A1)+
+*    ADDQ    #2,D1
+*    RTS
+*;If the EA is a (xxx).W EA    
+*;This method assume D6 contains the Reg for (xxx).W  
+*EAAWA
+*    MOVE.B  #'',(A1)+
+*    ADD.B   #48,D6      ; Add 48 into D6 to turn num 0 into ASCII 0
+*    MOVE.B  D6,(A1)+
+*    ADDQ    #2,D1
+*    RTS
+*;If the EA is a (xxx).L EA    
+*;This method assume D6 contains the Reg for (xxx).L  
+*EAALA
+*    MOVE.B  #'',(A1)+
+*    ADD.B   #48,D6      ; Add 48 into D6 to turn num 0 into ASCII 0
+*    MOVE.B  D6,(A1)+
+*    ADDQ    #2,D1
+*    RTS
+*;If the EA Mode = 111, Determine EA    
+*;This method assume D6 contains the Reg for EA  
+*EA111
+*    CMP.B #0,D6
+*    BEQ     EAAWA       ; Absolute Word Address 
+*    CMP.B #1,D6
+*    BEQ     EAALA       ; Absolute Long Address 
+*    CMP.B #4,D6
+*    BEQ     EAID        ; Immediate Data 
+*    *-----------------------------------------------let fall through? it shouldn't RTS right?
     
 ; If the EA is unknown
 EAUNKN
@@ -50,6 +149,7 @@ EAUNKN
     RTS
 
 * Put variables and constants here
+
 
 
 *~Font name~Courier New~
