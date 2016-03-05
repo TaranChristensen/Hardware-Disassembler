@@ -14,16 +14,37 @@ OPGETCODE   MOVE.W  (A2)+,D5    ; Push our OpCode into D5
             ROR.L   #8,D6       ; Rotate our OpCode to right-most nybble
             ROR.L   #4,D6       ; 
             ANDI.B  #$0F,D6     ; Isolate our opcode nybble
+            CMP.B   #$00,D6
+            BEQ     ANDI        ; ANDI
             CMP.B   #$01,D6     
             BEQ     MOVEB       ; MOVE.B
             CMP.B   #$03,D6     
             BEQ     MOVEW       ; MOVE.W
             CMP.B   #$02,D6
             BEQ     MOVEL       ; MOVE.L
+            CMP.B   #$04,D6
+            BEQ     CNRJML      ; CLR or NOP or RTS or JSR or MOVEM or LEA
+            CMP.B   #$06,D6
+            BEQ     Bcc         ; Bcc (BCC, BGT, BLE)
+            CMP.B   #$07,D6
+            BEQ     MOVEQ       ; MOVEQ
+            CMP.B   #$08,D6
+            BEQ     DIVU        ; DIVU
+            CMP.B   #$09,D6
+            BEQ     SUB         ; SUB
+            CMP.B   #$0B,D6
+            BEQ     CMP         ; CMP
             CMP.B   #$0C,D6
             BEQ     MULSAND     ; MULS or AND opcodes
-            BRA     UNKNOWN
-            
+            CMP.B   #$0D,D6
+            BEQ     ADDADDA     ; ADD or ADDA
+            CMP.B   #$0E,D6 
+            BEQ     ASLSRO      ; ASd (ASR) or LSd (LSL) or ROd (ROL)
+            BRA     UNKNOWN  
+   
+ANDI        *(Implement)
+                 
+            RTS            
 MOVEB
             MOVE.L  #'MOVE',(A1)+
             MOVE.W  #'.B',(A1)+
@@ -87,6 +108,31 @@ MOVEL
             JSR EAGETDSTEA
             
             RTS
+            
+; This label determines if the code is either CLR or NOP or RTS or JSR or MOVEM or LEA            
+CNRJML      *(Implement)
+                 
+            RTS
+            
+Bcc         *(Implement)
+                 
+            RTS
+            
+MOVEQ       *(Implement)
+                 
+            RTS 
+            
+DIVU        *(Implement)
+                 
+            RTS
+            
+SUB         *(Implement)
+                 
+            RTS
+  
+CMP         *(Implement)
+                 
+            RTS         
        
 ; This label determines if the code is either MULS or AND, by looking at it's size bits     
 MULSAND     MOVE.L  D5,D6               ; Copy D5 into D6
@@ -121,6 +167,16 @@ MULS        MOVE.L  #'MULS',(A1)+
 AND
                  
             RTS
+
+; This label determines if the code is either ADD or ADDA           
+ADDADDA     *(Implement)
+                 
+            RTS
+
+; This label determines if the code is either ASd (ASR) or LSd (LSL) or ROd (ROL) 
+ASLSRO      *(Implement)
+                 
+            RTS
 UNKNOWN
             MOVE.L  #'????',(A1)+
             ADDQ    #4,D1           ; We added 4 new characters to our IOStringLoc 
@@ -132,6 +188,7 @@ UNKNOWN
         
             RTS
 * Put variables and constants here
+
 
 
 
