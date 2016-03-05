@@ -15,7 +15,7 @@ OPGETCODE   MOVE.W  (A2)+,D5    ; Push our OpCode into D5
             ROR.L   #4,D6       ; 
             ANDI.B  #$0F,D6     ; Isolate our opcode nybble
             CMP.B   #$00,D6
-            BEQ     ANDI        ; ANDI (WORKED ON)
+            BEQ     ADDI        ; ADDI (Worked on)
             CMP.B   #$01,D6     
             BEQ     MOVEB       ; MOVE.B
             CMP.B   #$03,D6     
@@ -23,7 +23,7 @@ OPGETCODE   MOVE.W  (A2)+,D5    ; Push our OpCode into D5
             CMP.B   #$02,D6
             BEQ     MOVEL       ; MOVE.L
             CMP.B   #$04,D6
-            BEQ     CNRJML      ; CLR or NOP or RTS or JSR or MOVEM or LEA (Implement)
+            BEQ     CNRJML      ; CLR or NOP or RTS or JSR or MOVEM or LEA (Implement)(Working on NOP,RTS,CLR)
             CMP.B   #$06,D6
             BEQ     Bcc         ; Bcc (BCC, BGT, BLE) (Implement)
             CMP.B   #$07,D6
@@ -42,19 +42,19 @@ OPGETCODE   MOVE.W  (A2)+,D5    ; Push our OpCode into D5
             BEQ     ASLSRO      ; ASd (ASR) or LSd (LSL) or ROd (ROL) (Implement)
             BRA     UNKNOWN  
    
-ANDI        
+ADDI        
             MOVE.L  D5,D6              ; Push D5 into D6 (Copy OPcode over isolated nybble)
             LSR.L   #6,D6              ; Shift six bits to the right
             ANDI.L  #$0003,D6          ; Isolate the size bits
             
-            CMP.B   #$0001,D6          ; See if the size is '01'..
-            BRA     ANDIW              ; ..If so, it's ANDI.W
-            CMP.B   #$0002,D6          ; See if the size is '10'..
-            BRA     ANDIL              ; ..If so, it's ANDI.L
-                                       ; If it isn't either, then it's ANDI.B
+            CMP.L   #$0001,D6          ; See if the size is '01'..
+            BEQ     ADDIW              ; ..If so, it's ANDI.W
+            CMP.L   #$0002,D6          ; See if the size is '10'..
+            BEQ     ADDIL              ; ..If so, it's ANDI.L
+            BRA     ADDIB              ; If it isn't either, then it's ANDI.B
             
-ANDIB       
-            MOVE.L  #'ANDI',(A1)+
+ADDIB       
+            MOVE.L  #'ADDI',(A1)+
             MOVE.W  #'.B',(A1)+
             ADDQ    #6,D1              ; We added 6 new characters to our IOStringLoc 
             
@@ -67,8 +67,8 @@ ANDIB
             
             RTS
             
-ANDIW       
-            MOVE.L  #'ANDI',(A1)+
+ADDIW       
+            MOVE.L  #'ADDI',(A1)+
             MOVE.W  #'.W',(A1)+
             ADDQ    #6,D1              ; We added 6 new characters to our IOStringLoc 
             
@@ -80,8 +80,8 @@ ANDIW
             JSR EAGETSRCEA             ; Find and print the code stored in D6
             RTS
             
-ANDIL      
-            MOVE.L  #'ANDI',(A1)+
+ADDIL      
+            MOVE.L  #'ADDI',(A1)+
             MOVE.W  #'.L',(A1)+
             ADDQ    #6,D1              ; We added 6 new characters to our IOStringLoc 
             
@@ -158,9 +158,50 @@ MOVEL
             RTS
             
 ; This label determines if the code is either CLR or NOP or RTS or JSR or MOVEM or LEA            
-CNRJML      *(Implement)
-                 
+CNRJML      
+            MOVE.L  D5,D6              ; Push D5 into D6 (Copy OPcode over isolated nybble)
+            
+            *NOP & RTS's machine code is hardcoded, check first
+            CMP.L   #$4E71,D6          ; See if the OPcode matches NOP's hardcode
+            BEQ     NOP
+            CMP.L   #$4E75,D6          ; See if the OPcode matches RTS's hardcode
+            BEQ     RTS
+            
+                                       ; CLR's middle most left nybble is unique (0010)
+            ROR.L   #8,D6              ; Rotate our OpCode to right-most nybble
+            ANDI.B  #$0F,D6            ; Isolate our opcode nybble
+            CMP.B   #$02,D6            
+            BEQ     CLR               
+            
+            MOVE.L  D5,D6              ; Push D5 into D6
+            
+            BRA     JSR
+            BRA     MOVEM
+            BRA     LEA
+
+CLR         *(Implement)
+            RTS 
+NOP
+            MOVE.L  #'NOP',(A1)+
+            ADDQ    #3,D1              ; We added 3 new characters to our IOStringLoc 
+            
+            MOVE.L  #'    ',(A1)+      ; Add a spacer into our IOStringLoc
+            ADDQ    #4,D1              ; We added 4 bytes, aka 4 spaces        
             RTS
+            
+RTS         
+            MOVE.L  #'RTS',(A1)+
+            ADDQ    #3,D1              ; We added 3 new characters to our IOStringLoc 
+            
+            MOVE.L  #'    ',(A1)+      ; Add a spacer into our IOStringLoc
+            ADDQ    #4,D1              ; We added 4 bytes, aka 4 spaces        
+            RTS
+JSR         *(Implement)
+            RTS
+MOVEM       *(Implement)
+            RTS
+LEA         *(Implement)
+            RTS      
             
 Bcc         *(Implement)
                  
@@ -236,6 +277,8 @@ UNKNOWN
         
             RTS
 * Put variables and constants here
+
+
 
 
 
