@@ -15,7 +15,7 @@ OPGETCODE   MOVE.W  (A2)+,D5    ; Push our OpCode into D5
             ROR.L   #4,D6       ; 
             ANDI.B  #$0F,D6     ; Isolate our opcode nybble
             CMP.B   #$00,D6
-            BEQ     ANDI        ; ANDI
+            BEQ     ANDI        ; ANDI (WORKED ON)
             CMP.B   #$01,D6     
             BEQ     MOVEB       ; MOVE.B
             CMP.B   #$03,D6     
@@ -23,28 +23,76 @@ OPGETCODE   MOVE.W  (A2)+,D5    ; Push our OpCode into D5
             CMP.B   #$02,D6
             BEQ     MOVEL       ; MOVE.L
             CMP.B   #$04,D6
-            BEQ     CNRJML      ; CLR or NOP or RTS or JSR or MOVEM or LEA
+            BEQ     CNRJML      ; CLR or NOP or RTS or JSR or MOVEM or LEA (Implement)
             CMP.B   #$06,D6
-            BEQ     Bcc         ; Bcc (BCC, BGT, BLE)
+            BEQ     Bcc         ; Bcc (BCC, BGT, BLE) (Implement)
             CMP.B   #$07,D6
-            BEQ     MOVEQ       ; MOVEQ
+            BEQ     MOVEQ       ; MOVEQ (Implement)
             CMP.B   #$08,D6
-            BEQ     DIVU        ; DIVU
+            BEQ     DIVU        ; DIVU (Implement)
             CMP.B   #$09,D6
-            BEQ     SUB         ; SUB
+            BEQ     SUB         ; SUB (Implement)
             CMP.B   #$0B,D6
-            BEQ     CMP         ; CMP
+            BEQ     CMP         ; CMP (Implement)
             CMP.B   #$0C,D6
-            BEQ     MULSAND     ; MULS or AND opcodes
+            BEQ     MULSAND     ; MULS or AND opcodes (Implement AND)
             CMP.B   #$0D,D6
-            BEQ     ADDADDA     ; ADD or ADDA
+            BEQ     ADDADDA     ; ADD or ADDA (Implement)
             CMP.B   #$0E,D6 
-            BEQ     ASLSRO      ; ASd (ASR) or LSd (LSL) or ROd (ROL)
+            BEQ     ASLSRO      ; ASd (ASR) or LSd (LSL) or ROd (ROL) (Implement)
             BRA     UNKNOWN  
    
-ANDI        *(Implement)
-                 
-            RTS            
+ANDI        
+            MOVE.L  D5,D6              ; Push D5 into D6 (Copy OPcode over isolated nybble)
+            LSR.L   #6,D6              ; Shift six bits to the right
+            ANDI.L  #$0003,D6          ; Isolate the size bits
+            
+            CMP.B   #$0001,D6          ; See if the size is '01'..
+            BRA     ANDIW              ; ..If so, it's ANDI.W
+            CMP.B   #$0002,D6          ; See if the size is '10'..
+            BRA     ANDIL              ; ..If so, it's ANDI.L
+                                       ; If it isn't either, then it's ANDI.B
+            
+ANDIB       
+            MOVE.L  #'ANDI',(A1)+
+            MOVE.W  #'.B',(A1)+
+            ADDQ    #6,D1              ; We added 6 new characters to our IOStringLoc 
+            
+            MOVE.L  #'    ',(A1)+      ; Add a spacer into our IOStringLoc
+            ADDQ    #4,D1              ; We added 4 bytes, aka 4 spaces
+            
+            MOVE.L  D5,D6              ; Push D5 into D6
+            ANDI.L  #$003F,D6          ; Isolate the Src EA bits 
+            JSR EAGETSRCEA             ; Find and print the code stored in D6
+            
+            RTS
+            
+ANDIW       
+            MOVE.L  #'ANDI',(A1)+
+            MOVE.W  #'.W',(A1)+
+            ADDQ    #6,D1              ; We added 6 new characters to our IOStringLoc 
+            
+            MOVE.L  #'    ',(A1)+      ; Add a spacer into our IOStringLoc
+            ADDQ    #4,D1              ; We added 4 bytes, aka 4 spaces
+            
+            MOVE.L  D5,D6              ; Push D5 into D6
+            ANDI.L  #$003F,D6          ; Isolate the Src EA bits 
+            JSR EAGETSRCEA             ; Find and print the code stored in D6
+            RTS
+            
+ANDIL      
+            MOVE.L  #'ANDI',(A1)+
+            MOVE.W  #'.L',(A1)+
+            ADDQ    #6,D1              ; We added 6 new characters to our IOStringLoc 
+            
+            MOVE.L  #'    ',(A1)+      ; Add a spacer into our IOStringLoc
+            ADDQ    #4,D1              ; We added 4 bytes, aka 4 spaces
+            
+            MOVE.L  D5,D6              ; Push D5 into D6
+            ANDI.L  #$003F,D6          ; Isolate the Src EA bits 
+            JSR EAGETSRCEA             ; Find and print the code stored in D6
+                
+            RTS               
 MOVEB
             MOVE.L  #'MOVE',(A1)+
             MOVE.W  #'.B',(A1)+
@@ -188,6 +236,7 @@ UNKNOWN
         
             RTS
 * Put variables and constants here
+
 
 
 
