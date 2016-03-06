@@ -155,7 +155,6 @@ CNRJML
             ANDI.B  #$0F,D6            ; Isolate our opcode nybble
             CMP.B   #$02,D6            ; See if matches nybble
             BEQ     CLR               
-<<<<<<< HEAD
             
             MOVE.L  D5,D6              ; Push D5 into D6
             LSR.L   #8,D6              ; Shift 8 bits to the right
@@ -168,7 +167,6 @@ CNRJML
             BNE     JSR                ; If this one is set, branch to JSR
             
             BRA     MOVEM
-=======
                                        ; LEA's middle most left nybble is unique (xxx1)
             BTST    #1,D6              ; Check the right most bit's value
             BEQ     LEA                ; If equals 1, branch
@@ -185,7 +183,6 @@ CNRJML
             BEQ     JSR                ; Branch
             
             BRA     UNKNOWN            ; If it doesnt any match, then it's Unknown
->>>>>>> origin/master
 
 
 ;  Here we assume the first left-most 8 bits have been confirmed: 0100 0010
@@ -213,20 +210,16 @@ RTS
             ADDQ    #4,D1              ; We added 4 bytes, aka 4 spaces        
             RTS
             
-<<<<<<< HEAD
-=======
+
 ;  Here we assume the first left-most 10 bits have been confirmed: 0100 1110 10 
->>>>>>> origin/master
 JSR         *(Implement)
             MOVE.W  #'JS',(A1)+
             MOVE.B  #'R',(A1)+
             ADDQ    #3,D1              ; We added 3 new characters to our IOStringLoc 
             RTS
             
-<<<<<<< HEAD
-=======
+
 ;  Here we assume that these left-most have been confirmed, where - have not been confirmed: 0100 --00
->>>>>>> origin/master
 MOVEM       *(Implement)
             MOVE.L  #'MOVE',(A1)+
             MOVE.W  #'M.',(A1)+
@@ -257,8 +250,7 @@ MOVEMOP     MOVE.B  #' ',(A1)+         ; Add a spacer into our IOStringLoc
             
 MOVEMPRED               
             RTS
-            
-<<<<<<< HEAD
+
 MOVEMPOSTI  MOVE.L  D5,D6              ; Copy our OpCode to D6
             ANDI.L  #$3F,D6            ; Isolate our EA src bits
             
@@ -272,9 +264,8 @@ MOVEMPOSTI  MOVE.L  D5,D6              ; Copy our OpCode to D6
             
             RTS
             
-=======
+
 ;  Here we assume that these left-most have been confirmed, where - have not been confirmed: 0100 ---1            
->>>>>>> origin/master
 LEA         *(Implement)
             MOVE.W  #'LE',(A1)+
             MOVE.B  #'A',(A1)+
@@ -434,19 +425,6 @@ UNKNOWN
 * Put variables and constants here
 
 
-
-
-
-
-
-
-
-
-
-<<<<<<< HEAD
-=======
-
->>>>>>> origin/master
 *~Font name~Courier New~
 *~Font size~10~
 *~Tab type~1~
