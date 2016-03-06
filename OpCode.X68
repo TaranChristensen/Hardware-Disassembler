@@ -42,16 +42,28 @@ OPGETCODE   MOVE.W  (A2)+,D5    ; Push our OpCode into D5
             BEQ     ASLSRO      ; ASd (ASR) or LSd (LSL) or ROd (ROL) (Implement)
             BRA     UNKNOWN  
    
-ADDI        
+ADDI                                    ; Confirmed first left-most 4 bits of ADDI
+            MOVE.L  D5,D6               ; Push D5 into D6
+            ROR.L   #8,D6               ; Rotate left-most middle nybble to the right-most nybble
+            ANDI.B  #$0F,D6             ; Isolate opcode nybble
+            CMP.B   #$06,D6             ; If it matches ADDI's left-most middle nybble, branch
+            BEQ     ADDI8               ; First 8 left-most bits of ADDI confirmed 
+            BRA     UNKNOWN             ; else unknown                       
+            
+ADDI8                                   ; Confirmed first left-most 8 bits of ADDI
+
             MOVE.L  D5,D6              ; Push D5 into D6 (Copy OPcode over isolated nybble)
             LSR.L   #6,D6              ; Shift six bits to the right
             ANDI.L  #$0003,D6          ; Isolate the size bits
-            
+                       
+            CMP.L   #$0000,D6          ; See if the size is '00'..
+            BEQ     ADDIB              ; ..If so, it's ANDI.B
             CMP.L   #$0001,D6          ; See if the size is '01'..
             BEQ     ADDIW              ; ..If so, it's ANDI.W
             CMP.L   #$0002,D6          ; See if the size is '10'..
             BEQ     ADDIL              ; ..If so, it's ANDI.L
-            BRA     ADDIB              ; If it isn't either, then it's ANDI.B
+            
+            BRA     UNKNOWN            ; If it isn't any, then it's Unknown
             
 ADDIB       
             MOVE.L  #'ADDI',(A1)+
@@ -128,30 +140,45 @@ MOVEOP      MOVE.L  #'    ',(A1)+       ; Add a spacer into our IOStringLoc
             JSR EAGETDSTEA
             RTS
             
-; This label determines if the code is either CLR or NOP or RTS or JSR or MOVEM or LEA            
+; This label determines if the code is either CLR or NOP or RTS or JSR or MOVEM or LEA
+; Here we assume that the first left-most four bits equal 0100            
 CNRJML      
             MOVE.L  D5,D6              ; Push D5 into D6 (Copy OPcode over isolated nybble)
             
-            *NOP & RTS's machine code is hardcoded, check first
+            *NOP & RTS's machine code is uniquely hardcoded, check first
             CMP.L   #$4E71,D6          ; See if the OPcode matches NOP's hardcode
             BEQ     NOP
             CMP.L   #$4E75,D6          ; See if the OPcode matches RTS's hardcode
             BEQ     RTS
-            
                                        ; CLR's middle most left nybble is unique (0010)
             ROR.L   #8,D6              ; Rotate our OpCode to right-most nybble
             ANDI.B  #$0F,D6            ; Isolate our opcode nybble
-            CMP.B   #$02,D6            
+            CMP.B   #$02,D6            ; See if matches nybble
             BEQ     CLR               
+                                       ; LEA's middle most left nybble is unique (xxx1)
+            BTST    #1,D6              ; Check the right most bit's value
+            BEQ     LEA                ; If equals 1, branch
+               
+                                       ; MOVEM's middle most left nybble is unique (1x00)
+            ROR.L   #1,D6              ; first bit must be 0, rotate 1 bit 
+            BTST    #0,D6               ; Compare again for 00 match
+            BEQ     MOVEM                           
+                                       
+            MOVE.L  D5,D6              ; Push D5 into D6; JSR's middle nybbles are unique (1110 10xx)
+            ROR.L   #6,D6              ; Rotate 6 bits
+            ANDI.L  #$00FF,D6          ; Isolate the 8 known bits (00 1110 10)
+            CMP.L   #$003A,D6          ; Compare
+            BEQ     JSR                ; Branch
             
-            MOVE.L  D5,D6              ; Push D5 into D6
-            
-            BRA     JSR
-            BRA     MOVEM
-            BRA     LEA
+            BRA     UNKNOWN            ; If it doesnt any match, then it's Unknown
 
+
+;  Here we assume the first left-most 8 bits have been confirmed: 0100 0010
 CLR         *(Implement)
-            RTS 
+
+            RTS
+            
+;  Here we assume that all 16 bits have been confirmed 
 NOP
             MOVE.L  #'NOP',(A1)+
             ADDQ    #3,D1              ; We added 3 new characters to our IOStringLoc 
@@ -159,7 +186,8 @@ NOP
             MOVE.L  #'    ',(A1)+      ; Add a spacer into our IOStringLoc
             ADDQ    #4,D1              ; We added 4 bytes, aka 4 spaces        
             RTS
-            
+
+;  Here we assume that all 16 bits have been confirmed            
 RTS         
             MOVE.L  #'RTS',(A1)+
             ADDQ    #3,D1              ; We added 3 new characters to our IOStringLoc 
@@ -167,10 +195,16 @@ RTS
             MOVE.L  #'    ',(A1)+      ; Add a spacer into our IOStringLoc
             ADDQ    #4,D1              ; We added 4 bytes, aka 4 spaces        
             RTS
+            
+;  Here we assume the first left-most 10 bits have been confirmed: 0100 1110 10 
 JSR         *(Implement)
             RTS
+            
+;  Here we assume that these left-most have been confirmed, where - have not been confirmed: 0100 --00
 MOVEM       *(Implement)
             RTS
+            
+;  Here we assume that these left-most have been confirmed, where - have not been confirmed: 0100 ---1            
 LEA         *(Implement)
             RTS      
             
@@ -325,6 +359,8 @@ UNKNOWN
         
             RTS
 * Put variables and constants here
+
+
 
 
 
