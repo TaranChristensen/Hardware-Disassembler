@@ -92,55 +92,27 @@ ADDIL
             ANDI.L  #$003F,D6          ; Isolate the Src EA bits 
             JSR EAGETSRCEA             ; Find and print the code stored in D6
                 
-            RTS               
-MOVEB
-            MOVE.L  #'MOVE',(A1)+
+            RTS 
+              
+MOVEB       MOVE.L  #'MOVE',(A1)+
             MOVE.W  #'.B',(A1)+
             ADDQ    #6,D1              ; We added 6 new characters to our IOStringLoc 
             
-            MOVE.L  #'    ',(A1)+      ; Add a spacer into our IOStringLoc
-            ADDQ    #4,D1              ; We added 4 bytes, aka 4 spaces
+            BRA MOVEOP
             
-            MOVE.L  D5,D6              ; Push D5 into D6
-            ANDI.L  #$003F,D6          ; Isolate the Src EA bits 
-            JSR EAGETSRCEA             ; Find and print the code stored in D6
-            
-            MOVE.B  #',',(A1)+
-            ADDQ    #1,D1
-            
-            MOVE.L  D5,D6              ; Push D5 into D6
-            LSR.L   #6,D6              ; Shift six bits to the right
-            ANDI.L  #$003F,D6          ; Isolate the Dst EA bits
-            JSR EAGETDSTEA
-            
-            RTS
-MOVEW
-            MOVE.L  #'MOVE',(A1)+
+MOVEW       MOVE.L  #'MOVE',(A1)+
             MOVE.W  #'.W',(A1)+
             ADDQ    #6,D1               ; We added 6 new characters to our IOStringLoc 
             
-            MOVE.L  #'    ',(A1)+       ; Add a spacer into our IOStringLoc
-            ADDQ    #4,D1               ; We added 4 bytes, aka 4 spaces
+            BRA MOVEOP
             
-            MOVE.L  D5,D6               ; Push D5 into D6
-            ANDI.L  #$003F,D6           ; Isolate the Src EA bits 
-            JSR EAGETSRCEA              ; Find and print the code stored in D6
-            
-            MOVE.B  #',',(A1)+
-            ADDQ    #1,D1
-            
-            MOVE.L  D5,D6               ; Push D5 into D6
-            LSR.L   #6,D6               ; Shift six bits to the right
-            ANDI.L  #$003F,D6           ; Isolate the Dst EA bits
-            JSR EAGETDSTEA
-            
-            RTS
-MOVEL
-            MOVE.L  #'MOVE',(A1)+
+MOVEL       MOVE.L  #'MOVE',(A1)+
             MOVE.W  #'.L',(A1)+
             ADDQ    #6,D1               ; We added 6 new characters to our IOStringLoc 
             
-            MOVE.L  #'    ',(A1)+       ; Add a spacer into our IOStringLoc
+            BRA MOVEOP
+            
+MOVEOP      MOVE.L  #'    ',(A1)+       ; Add a spacer into our IOStringLoc
             ADDQ    #4,D1               ; We added 4 bytes, aka 4 spaces
             
             MOVE.L  D5,D6               ; Push D5 into D6
@@ -154,7 +126,6 @@ MOVEL
             LSR.L   #6,D6               ; Shift six bits to the right
             ANDI.L  #$003F,D6           ; Isolate the Dst EA bits
             JSR EAGETDSTEA
-            
             RTS
             
 ; This label determines if the code is either CLR or NOP or RTS or JSR or MOVEM or LEA            
