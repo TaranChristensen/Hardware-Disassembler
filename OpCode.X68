@@ -226,8 +226,8 @@ CMP         *(Implement)
 ; This label determines if the code is either MULS or AND, by looking at it's size bits     
 MULSAND     MOVE.L  D5,D6               ; Copy D5 into D6
             LSR.L   #6,D6               ; Shift the size bits to the far right
-            ANDI.B  #$3,D6              ; Isolate the size bits
-            CMP.B   #3,D6               ; See if the size is '11'..
+            ANDI.B  #$7,D6              ; Isolate the size bits
+            CMP.B   #7,D6               ; See if the size is '111'..
             BEQ.S   MULS                ; ..If so, it's a MULS opcode
             BRA     AND                 ; Otherwise, it's an AND code
         
@@ -253,8 +253,85 @@ MULS        MOVE.L  #'MULS',(A1)+
             RTS
             
 ; At this point, we know D6 is the size of our opcode
-AND
-                 
+AND         MOVE.L  #'AND.',(A1)+
+            ADDQ    #4,D1               ; We added 4 new characters to our IOStringLoc
+            
+            CMP.B   #%0110,D6            ; See if D6 is size "%100" through "%110"..
+            BEQ     ANDLEA              ; If it is, our OpCode is in the format of..
+            CMP.B   #%101,D6            ; .. Dn ~ <EA> --> <EA>
+            BEQ     ANDWEA
+            CMP.B   #%100,D6
+            BEQ     ANDBEA
+            
+            CMP.B   #%10,D6             ; See if D6 is size "%000" through "%010"..
+            BEQ     ANDLDN              ; If it is, our OpCode is in the format of..
+            CMP.B   #%01,D6             ; .. <EA> ~ Dn --> Dn
+            BEQ     ANDWDN
+            BRA     ANDBDN              ; == 000 at this point
+            
+ANDLEA      MOVE.B  #'L',(A1)+
+            ADDQ    #1,D1               ; We added 1 byte into D1
+            BRA     ANDEA
+            
+ANDWEA      MOVE.B  #'W',(A1)+
+            ADDQ    #1,D1               ; We added 1 byte into D1
+            BRA     ANDEA
+
+ANDBEA      MOVE.B  #'B',(A1)+
+            ADDQ    #1,D1               ; We added 1 byte into D1
+            BRA     ANDEA
+
+ANDEA       MOVE.B  #$09,(A1)+          ; Add a spacer into our IOStringLoc
+            ADDQ    #1,D1               ; We added 4 bytes, aka 4 spaces
+            
+            MOVE.L  D5,D6
+            LSR.L   #8,D6               ; Shift our OpCode a total of 9 bits to the right
+            LSR.L   #1,D6               ; 
+            ANDI.L  #$07,D6             ; Isolate our data register
+            
+            JSR EADN
+            
+            MOVE.B  #',',(A1)+
+            ADDQ    #1,D1
+            
+            MOVE.L  D5,D6               ; Copy our OpCode again
+            ANDI.L  #$3F,D6             ; Isolate our EA bits
+            
+            JSR EAGETSRCEA  
+            
+            RTS
+            
+ANDLDN      MOVE.B  #'L',(A1)+
+            ADDQ    #1,D1               ; We added 1 byte into D1
+            BRA ANDDN
+            
+ANDWDN      MOVE.B  #'L',(A1)+
+            ADDQ    #1,D1               ; We added 1 byte into D1
+            BRA ANDDN
+
+ANDBDN      MOVE.B  #'L',(A1)+
+            ADDQ    #1,D1               ; We added 1 byte into D1
+            BRA ANDDN  
+
+ANDDN
+            MOVE.B  #$09,(A1)+          ; Add a spacer into our IOStringLoc
+            ADDQ    #1,D1               ; We added 4 bytes, aka 4 spaces
+            
+            MOVE.L  D5,D6               ; Copy our OpCode again
+            ANDI.L  #$3F,D6             ; Isolate our EA bits
+            
+            JSR EAGETSRCEA              
+            
+            MOVE.B  #',',(A1)+
+            ADDQ    #1,D1
+            
+            MOVE.L  D5,D6
+            LSR.L   #8,D6               ; Shift our OpCode a total of 9 bits to the right
+            LSR.L   #1,D6               ; 
+            ANDI.L  #$07,D6             ; Isolate our data register
+            
+            JSR EADN
+            
             RTS
 
 ; This label determines if the code is either ADD or ADDA           
@@ -277,6 +354,7 @@ UNKNOWN
         
             RTS
 * Put variables and constants here
+
 
 
 
