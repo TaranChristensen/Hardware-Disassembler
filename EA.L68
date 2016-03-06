@@ -1,6 +1,6 @@
 00001000 Starting Address
 Assembler used: EASy68K Editor/Assembler v5.15.04
-Created On: 2/16/2016 5:58:36 PM
+Created On: 3/5/2016 9:11:36 PM
 
 00000000                             1  *-----------------------------------------------------------
 00000000                             2  * Title      : EA
@@ -8,22 +8,298 @@ Created On: 2/16/2016 5:58:36 PM
 00000000                             4  * Date       : ##/##/16
 00000000                             5  * Description: Effective Address File
 00000000                             6  *-----------------------------------------------------------
-00001000                             7      ORG    $1000
-00001000                             8  START:                  ; first instruction of program
-00001000                             9  
-00001000                            10  * Put program code here
-00001000                            11  
-00001000  143C 00EA                 12      MOVE.B  #$EA,D2
-00001004                            13  
-00001004                            14  * Put variables and constants here
-00001004                            15  
-00001004                            16      END    START        ; last line of source
+00000000                             7  
+00000000                             8  * Put program code here
+00000000                             9  
+00000000                            10  ; It is assumed that D6 contains the bits for the EA, algined to the far right. D5 contains
+00000000                            11  ;  the original full op-code being reffered to. We assume that A2 contains the address 
+00000000                            12  ;  pointing to the start of our EA address (if applicable), and we assume that A1 contains
+00000000                            13  ;  the address pointing to our IOStringLoc. D1 contains the current length to be printed from A1
+00000000                            14  
+00000000                            15  ; For this method, D6 is in the format of: <3 bits Src Mode><3 bits Src Reg> 
+00000000                            16  EAGETSRCEA  
+00000000  E69E                      17      ROR.L   #3,D6       ; Rotate our bits 3 to the right
+00000002  1E06                      18      MOVE.B  D6,D7       ; Store the mode of the EA in D7
+00000004  E79E                      19      ROL.L   #3,D6       ; Rotate our 3 bits back
+00000006  0286 00000007             20      ANDI.L  #$0007,D6   ; Isolate the 3 rightmost bits as 'Reg'
+0000000C  BE3C 0000                 21      CMP.B   #0,D7       ; See if the mode == '000'
+00000010  6700 005A                 22      BEQ     EADN
+00000014                            23  
+00000014  BE3C 0001                 24      CMP.B   #1,D7       ; See if the mode == '001'
+00000018  6700 0060                 25      BEQ     EAAN        ; Address Register Direct
+0000001C                            26      
+0000001C  BE3C 0002                 27      CMP.B   #2,D7       ; See if the mode == '010'
+00000020  6700 0066                 28      BEQ     EAANI       ; Address Register Indirect
+00000024                            29      
+00000024  BE3C 0003                 30      CMP.B   #3,D7       ; See if the mode == '011'
+00000028  6700 0074                 31      BEQ     EAAPOST     ; Address Register Indirect with Post increment
+0000002C                            32      
+0000002C  BE3C 0004                 33      CMP.B   #4,D7       ; See if the mode == '100'
+00000030  6700 0086                 34      BEQ     EAAPRE      ; Address Register Indirect with Pre increment
+00000034                            35      
+00000034                            36  *    CMP.B   #7,D7       ; See if the mode == '111' 
+00000034                            37  *    BEQ     EA111       ; Determine if (Immediate Data, Aboslute Word or Long Address)
+00000034                            38  
+00000034  6000 0186                 39      BRA     EAUNKN
+00000038                            40  
+00000038                            41  ; For this method, D6 is in the format of: <3 bits Dst Reg><3 bits Dst Mode> 
+00000038                            42  EAGETDSTEA  
+00000038  1E06                      43      MOVE.B  D6,D7       ; Store the right-most byte into D7
+0000003A  CE3C 0007                 44      AND.B   #$07,D7     ; Isolate 3 rightmost bits as 'Mode'
+0000003E  E68E                      45      LSR.L   #3,D6       ; Shift D6 to the right 3 bits (D6 Byte = 'Reg')
+00000040  BE3C 0000                 46      CMP.B   #0,D7       ; See if the mode == '000'
+00000044  6700 0026                 47      BEQ     EADN
+00000048                            48  
+00000048  BE3C 0001                 49      CMP.B   #1,D7       ; See if the mode == '001'
+0000004C  6700 002C                 50      BEQ     EAAN        ; Address Register Direct
+00000050                            51      
+00000050  BE3C 0002                 52      CMP.B   #2,D7       ; See if the mode == '010'
+00000054  6700 0032                 53      BEQ     EAANI       ; Address Register Indirect
+00000058                            54      
+00000058  BE3C 0003                 55      CMP.B   #3,D7       ; See if the mode == '011'
+0000005C  6700 0040                 56      BEQ     EAAPOST     ; Address Register Indirect with Post increment
+00000060                            57      
+00000060  BE3C 0004                 58      CMP.B   #4,D7       ; See if the mode == '100'
+00000064  6700 0052                 59      BEQ     EAAPRE      ; Address Register Indirect with Pre increment
+00000068                            60      
+00000068                            61  *    CMP.B   #7,D7       ; See if the mode == '111' 
+00000068                            62  *    BEQ     EA111       ; Determine if (Immediate Data, Aboslute Word or Long Address)
+00000068                            63  
+00000068  6000 0152                 64      BRA     EAUNKN
+0000006C                            65           
+0000006C                            66  ;If the EA is a Dn EA    
+0000006C                            67  ;This method assume D6 contains the Reg for Dn  
+0000006C                            68  EADN
+0000006C  12FC 0044                 69      MOVE.B  #'D',(A1)+
+00000070  0606 0030                 70      ADD.B   #48,D6      ; Add 48 into D6 to turn num 0 into ASCII 0
+00000074  12C6                      71      MOVE.B  D6,(A1)+
+00000076  5441                      72      ADDQ    #2,D1
+00000078  4E75                      73      RTS
+0000007A                            74  ;If the EA is a An EA    
+0000007A                            75  ;This method assume D6 contains the Reg for An  
+0000007A                            76  EAAN
+0000007A  12FC 0041                 77      MOVE.B  #'A',(A1)+
+0000007E  0606 0030                 78      ADD.B   #48,D6      ; Add 48 into D6 to turn num 0 into ASCII 0
+00000082  12C6                      79      MOVE.B  D6,(A1)+
+00000084  5441                      80      ADDQ    #2,D1
+00000086  4E75                      81      RTS
+00000088                            82  
+00000088                            83  ;If the EA is a (An) EA    
+00000088                            84  ;This method assume D6 contains the Reg for (An)  
+00000088                            85  EAANI
+00000088  12FC 0028                 86      MOVE.B  #'(',(A1)+
+0000008C  12FC 0041                 87      MOVE.B  #'A',(A1)+
+00000090  0606 0030                 88      ADD.B   #48,D6      ; Add 48 into D6 to turn num 0 into ASCII 0
+00000094  12C6                      89      MOVE.B  D6,(A1)+
+00000096  12FC 0029                 90      MOVE.B  #')',(A1)+
+0000009A  5841                      91      ADDQ    #4,D1
+0000009C  4E75                      92      RTS
+0000009E                            93  ;If the EA is a (An)+ EA    
+0000009E                            94  ;This method assume D6 contains the Reg for (An)+  
+0000009E                            95  EAAPOST
+0000009E  12FC 0028                 96      MOVE.B  #'(',(A1)+
+000000A2  12FC 0041                 97      MOVE.B  #'A',(A1)+
+000000A6  0606 0030                 98      ADD.B   #48,D6      ; Add 48 into D6 to turn num 0 into ASCII 0
+000000AA  12C6                      99      MOVE.B  D6,(A1)+
+000000AC  12FC 0029                100      MOVE.B  #')',(A1)+
+000000B0  12FC 002B                101      MOVE.B  #'+',(A1)+
+000000B4  5A41                     102      ADDQ    #5,D1
+000000B6  4E75                     103      RTS
+000000B8                           104  ;If the EA is a -(An) EA    
+000000B8                           105  ;This method assume D6 contains the Reg for -(An) 
+000000B8                           106  EAAPRE
+000000B8  12FC 002D                107      MOVE.B  #'-',(A1)+
+000000BC  12FC 0028                108      MOVE.B  #'(',(A1)+
+000000C0  12FC 0041                109      MOVE.B  #'A',(A1)+
+000000C4  0606 0030                110      ADD.B   #48,D6      ; Add 48 into D6 to turn num 0 into ASCII 0
+000000C8  12C6                     111      MOVE.B  D6,(A1)+
+000000CA  12FC 0029                112      MOVE.B  #')',(A1)+
+000000CE  5A41                     113      ADDQ    #5,D1
+000000D0  4E75                     114      RTS 
+000000D2                           115  *;If the EA is a #<data> EA    
+000000D2                           116  *;This method assume D6 contains the Reg for #<data>  
+000000D2                           117  *EAID
+000000D2                           118  *    MOVE.B  #'',(A1)+
+000000D2                           119  *    ADD.B   #48,D6      ; Add 48 into D6 to turn num 0 into ASCII 0
+000000D2                           120  *    MOVE.B  D6,(A1)+
+000000D2                           121  *    ADDQ    #2,D1
+000000D2                           122  *    RTS
+000000D2                           123  *;If the EA is a (xxx).W EA    
+000000D2                           124  *;This method assume D6 contains the Reg for (xxx).W  
+000000D2                           125  *EAAWA
+000000D2                           126  *    MOVE.B  #'',(A1)+
+000000D2                           127  *    ADD.B   #48,D6      ; Add 48 into D6 to turn num 0 into ASCII 0
+000000D2                           128  *    MOVE.B  D6,(A1)+
+000000D2                           129  *    ADDQ    #2,D1
+000000D2                           130  *    RTS
+000000D2                           131  *;If the EA is a (xxx).L EA    
+000000D2                           132  *;This method assume D6 contains the Reg for (xxx).L  
+000000D2                           133  *EAALA
+000000D2                           134  *    MOVE.B  #'',(A1)+
+000000D2                           135  *    ADD.B   #48,D6      ; Add 48 into D6 to turn num 0 into ASCII 0
+000000D2                           136  *    MOVE.B  D6,(A1)+
+000000D2                           137  *    ADDQ    #2,D1
+000000D2                           138  *    RTS
+000000D2                           139  *;If the EA Mode = 111, Determine EA    
+000000D2                           140  *;This method assume D6 contains the Reg for EA  
+000000D2                           141  *EA111
+000000D2                           142  *    CMP.B #0,D6
+000000D2                           143  *    BEQ     EAAWA       ; Absolute Word Address 
+000000D2                           144  *    CMP.B #1,D6
+000000D2                           145  *    BEQ     EAALA       ; Absolute Long Address 
+000000D2                           146  *    CMP.B #4,D6
+000000D2                           147  *    BEQ     EAID        ; Immediate Data 
+000000D2                           148  *    *-----------------------------------------------let fall through? it shouldn't RTS right?
+000000D2                           149      
+000000D2                           150  ; MOVEM's (A7)+,A0-A6,D0-D7 format
+000000D2                           151  ; Gets the follow-up WORD in order to process it
+000000D2                           152  EAMOVEMPOSTI
+000000D2  3C1A                     153      MOVE.W  (A2)+,D6    ; Get follow-up word for processing
+000000D4                           154      
+000000D4  2E3C 000000FF            155      MOVE.L  #$FF,D7     ; Initilize D7 to be our counter
+000000DA                           156      
+000000DA  EE9E                     157      ROR.L   #7,D6       ; Shift our new bits seven to the right
+000000DC                           158  IANSL    ; Increment An Start Loop  
+000000DC  5247                     159      ADDQ    #1,D7       ; Itterate D7
+000000DE  E29E                     160      ROR.L   #1,D6       ; Rotate one bit to the right  
+000000E0  BE3C 0008                161      CMP.B   #8,D7       ; Check if we've hit A8
+000000E4  6700 0056                162      BEQ     INOA        ; If we have, break the loop
+000000E8  0806 0000                163      BTST    #$00,D6     ; Check the far right bit
+000000EC  67EE                     164      BEQ     IANSL       ; If it isn't 1, continue checking
+000000EE                           165      
+000000EE  12FC 0041                166      MOVE.B  #'A',(A1)+
+000000F2                           167      
+000000F2  0607 0030                168      ADD.B   #48,D7      ; Add 48 into D7 to turn num 0 into ASCII 0
+000000F6  12C7                     169      MOVE.B  D7,(A1)+
+000000F8  5441                     170      ADDQ    #2,D1
+000000FA                           171      
+000000FA  0407 002F                172      SUB.B   #47,D7      ; Balance out out D7 from ASCII conversion
+000000FE  E29E                     173      ROR.L   #1,D6       ; Rotate one bit to the right  
+00000100  BE3C 0008                174      CMP.B   #8,D7       ; Check if we've hit A8
+00000104  6700 003A                175      BEQ     INOEA       ; If we have, break the loop
+00000108  0806 0000                176      BTST    #$00,D6     ; Check the far right bit
+0000010C  6700 0032                177      BEQ     INOEA       ; If it is 0, skip past -A
+00000110                           178  IANEL    ; Increment An End Loop  
+00000110  5247                     179      ADDQ    #1,D7       ; Itterate D7
+00000112  E29E                     180      ROR.L   #1,D6       ; Rotate one bit to the right  
+00000114  BE3C 0008                181      CMP.B   #8,D7       ; Check if we've hit A8
+00000118  6700 0026                182      BEQ     INOEA       ; If we have, break the loop
+0000011C  0806 0000                183      BTST    #$00,D6     ; Check the far right bit
+00000120  66EE                     184      BNE     IANEL       ; If it isn't 0, continue checking    
+00000122                           185      
+00000122  5347                     186      SUBQ    #1,D7
+00000124                           187      
+00000124  12FC 002D                188      MOVE.B  #'-',(A1)+
+00000128  12FC 0041                189      MOVE.B  #'A',(A1)+
+0000012C                           190      
+0000012C  0607 0030                191      ADD.B   #48,D7      ; Add 48 into D7 to turn num 0 into ASCII 0
+00000130  12C7                     192      MOVE.B  D7,(A1)+
+00000132  5641                     193      ADDQ    #3,D1
+00000134  0407 0030                194      SUB.B   #48,D7      ; SUB 48 into D7 for ASCII conversion
+00000138  6000 0006                195      BRA     INOEA       ; Branch past the 'No An Skip Label'
+0000013C                           196  
+0000013C                           197  INOA     ; No An Skip label 
+0000013C  08C7 001F                198      BSET.L  #$1F,D7     ; Set our MSB to equal 1
+00000140                           199   
+00000140                           200  INOEA    ; No An Ending (aka Single An) Skip Label
+00000140  5207                     201      ADD.B   #1,D7       ; Add 1 for 0ing balance
+00000142  0887 0008                202      BCLR    #$08,D7     ; Incase we're iterated base FF in A
+00000146  EFBE                     203      ROL.L   D7,D6       ; Rotate our A bits back into view
+00000148  E19E                     204      ROL.L   #8,D6       ; Rotate our D bits back into place
+0000014A  E39E                     205      ROL.L   #1,D6       ; Rotate an extra bit over, to account for the loop
+0000014C  1E3C 00FF                206      MOVE.B  #$FF,D7     ; Initilize D7
+00000150                           207  
+00000150                           208  IDNSL    ; Increment Dn Start Loop  
+00000150  5247                     209      ADDQ    #1,D7       ; Itterate D7
+00000152  E29E                     210      ROR.L   #1,D6       ; Rotate one bit to the right  
+00000154  BE3C 0008                211      CMP.B   #8,D7       ; Check if we've hit D8
+00000158  6700 0060                212      BEQ     ENDEAMOVEMPI ; If we have, break the loop
+0000015C  0806 0000                213      BTST    #$00,D6     ; Check the far right bit
+00000160  67EE                     214      BEQ     IDNSL       ; If it isn't 1, continue checking     
+00000162                           215      
+00000162                           216      ; The issue with the below line:
+00000162                           217      ;  We need to skip / if there are no An registers, as we do in INOA
+00000162                           218      ;  We also need to skip / if there are no Dn registers, as we do here
+00000162                           219      ;  However, we need to skip / if there are no An's, but we still need to run
+00000162                           220      ;   the above code to determine the starting Dn, so we use the MSB of D7
+00000162                           221      ;   as a boolean to determine if we had an An
+00000162  0807 001F                222      BTST    #$1F,D7     ; If our MSB is equal to 1, we have no A
+00000166  6600 0008                223      BNE     INOA2       ; .. So, skip the /
+0000016A  12FC 002F                224      MOVE.B  #'/',(A1)+
+0000016E  5241                     225      ADDQ    #1,D1
+00000170                           226  INOA2     ; 2nd No An Skip label 
+00000170  0887 001F                227      BCLR    #$1F,D7     ; If our MSB is set, clear it
+00000174  12FC 0044                228      MOVE.B  #'D',(A1)+
+00000178  0607 0030                229      ADD.B   #48,D7      ; Add 48 into D7 to turn num 0 into ASCII 0
+0000017C  12C7                     230      MOVE.B  D7,(A1)+    
+0000017E  5441                     231      ADDQ    #2,D1
+00000180                           232      
+00000180  0407 002F                233      SUB.B   #47,D7      ; Balance out our D7 from ASCII conversion
+00000184  E29E                     234      ROR.L   #1,D6       ; Rotate one bit to the right  
+00000186  BE3C 0008                235      CMP.B   #8,D7       ; Check if we've hit A8
+0000018A  6700 002E                236      BEQ     ENDEAMOVEMPI  ; If we have, break to the end
+0000018E  0806 0000                237      BTST    #$00,D6     ; Check the far right bit
+00000192  6700 0026                238      BEQ     ENDEAMOVEMPI ; If it is 0, we have no -Dn
+00000196                           239  IDNEL    ; Increment Dn End Loop  
+00000196  5247                     240      ADDQ    #1,D7       ; Itterate D7
+00000198  E29E                     241      ROR.L   #1,D6       ; Rotate one bit to the right  
+0000019A  BE3C 0008                242      CMP.B   #8,D7       ; Check if we've hit A8
+0000019E  6700 0008                243      BEQ     INENLE      ; If we have, break the loop
+000001A2  0806 0000                244      BTST    #$00,D6     ; Check the far right bit
+000001A6  66EE                     245      BNE     IDNEL       ; If it isn't 0, continue checking    
+000001A8                           246  INENLE
+000001A8  5347                     247      SUBQ    #1,D7
+000001AA                           248      
+000001AA  12FC 002D                249      MOVE.B  #'-',(A1)+
+000001AE  12FC 0044                250      MOVE.B  #'D',(A1)+
+000001B2                           251  
+000001B2  0607 0030                252      ADD.B   #48,D7      ; Add 48 into D7 to turn num 0 into ASCII 0
+000001B6  12C7                     253      MOVE.B  D7,(A1)+
+000001B8  5641                     254      ADDQ    #3,D1 
+000001BA                           255      ; If no Dn, skip to the end
+000001BA                           256  ENDEAMOVEMPI
+000001BA  4E75                     257      RTS
+000001BC                           258      
+000001BC                           259  EAMOVEMPRED
+000001BC                           260  ; If the EA is unknown
+000001BC                           261  EAUNKN
+000001BC  12FC 003C                262      MOVE.B  #'<',(A1)+  ; We did this byte-by-byte in case A1 is at an odd register
+000001C0  12FC 0045                263      MOVE.B  #'E',(A1)+
+000001C4  12FC 0041                264      MOVE.B  #'A',(A1)+
+000001C8  12FC 003E                265      MOVE.B  #'>',(A1)+
+000001CC  5841                     266      ADDQ    #4,D1
+000001CE  4E75                     267      RTS
+000001D0                           268  
+000001D0                           269  * Put variables and constants here
+000001D0                           270  
+000001D0                           271  
+000001D0                           272  
+000001D0                           273  
+Line 274 WARNING: END directive missing, starting address not set
 
 No errors detected
-No warnings generated
+1 warning generated
 
 
 SYMBOL TABLE INFORMATION
 Symbol-name         Value
 -------------------------
-START               1000
+EAAN                7A
+EAANI               88
+EAAPOST             9E
+EAAPRE              B8
+EADN                6C
+EAGETDSTEA          38
+EAGETSRCEA          0
+EAMOVEMPOSTI        D2
+EAMOVEMPRED         1BC
+EAUNKN              1BC
+ENDEAMOVEMPI        1BA
+IANEL               110
+IANSL               DC
+IDNEL               196
+IDNSL               150
+INENLE              1A8
+INOA                13C
+INOA2               170
+INOEA               140

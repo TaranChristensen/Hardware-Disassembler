@@ -145,15 +145,22 @@ CNRJML
             BEQ     CLR               
             
             MOVE.L  D5,D6              ; Push D5 into D6
+            LSR.L   #8,D6              ; Shift 8 bits to the right
             
-            BRA     JSR
+            BTST    #$00,D6            ; See if our right-most bit is set
+            BNE     LEA                ; If our bit is set, branch to LEA     
+            
+            LSR.L   #1,D6              ; Shift another bit
+            BTST    #$00,D6            ; See if our right-most bit is set
+            BNE     JSR                ; If this one is set, branch to JSR
+            
             BRA     MOVEM
-            BRA     LEA
 
 CLR         *(Implement)
             RTS 
 NOP
-            MOVE.L  #'NOP',(A1)+
+            MOVE.W  #'NO',(A1)+
+            MOVE.B  #'P',(A1)+
             ADDQ    #3,D1              ; We added 3 new characters to our IOStringLoc 
             
             MOVE.L  #'    ',(A1)+      ; Add a spacer into our IOStringLoc
@@ -161,17 +168,68 @@ NOP
             RTS
             
 RTS         
-            MOVE.L  #'RTS',(A1)+
+            MOVE.W  #'RT',(A1)+
+            MOVE.B  #'S',(A1)+
             ADDQ    #3,D1              ; We added 3 new characters to our IOStringLoc 
             
             MOVE.L  #'    ',(A1)+      ; Add a spacer into our IOStringLoc
             ADDQ    #4,D1              ; We added 4 bytes, aka 4 spaces        
             RTS
+            
 JSR         *(Implement)
+            MOVE.W  #'JS',(A1)+
+            MOVE.B  #'R',(A1)+
+            ADDQ    #3,D1              ; We added 3 new characters to our IOStringLoc 
             RTS
+            
 MOVEM       *(Implement)
+            MOVE.L  #'MOVE',(A1)+
+            MOVE.W  #'M.',(A1)+
+            ADDQ    #6,D1              ; We added 6 new characters to our IOStringLoc 
+            
+            MOVE.L  D5,D6              ; Copy our OpCode
+            LSR.L   #7,D6              ; Rotate it 7 bits to the right
+            BTST    #$00,D6            ; If our size bit is 0..
+            BEQ     MOVEMW             ; .. Its a MOVEM of size W
+            BRA     MOVEML             ; .. Otherwise it's of size L
+
+MOVEMW      MOVE.B  #'W',(A1)+
+            ADDQ    #1,D1              ; We've added another character into IOStringLoc
+            BRA     MOVEMOP            ; MovemOp label, to skip MovemL label
+            
+MOVEML      MOVE.B  #'L',(A1)+
+            ADDQ    #1,D1              ; We've added another character into IOStringLoc
+            
+MOVEMOP     MOVE.B  #' ',(A1)+         ; Add a spacer into our IOStringLoc
+            MOVE.W  #'  ',(A1)+        ;
+            MOVE.B  #' ',(A1)+         ;
+            ADDQ    #4,D1              ; We added 4 bytes, aka 4 spaces 
+            
+            LSR.L   #4,D6              ; Shift our OpCode 4 bits to the left of Size (going to the right)
+            BTST    #$00,D6            ; Check our Direction bit
+            BEQ     MOVEMPRED          ; If it's 0, our direction is Pre Decrement (eg. Move TO the stack)
+            BRA     MOVEMPOSTI         ; Otherwise, it's Post Increment (eg. Move FROM the stack)
+            
+MOVEMPRED               
             RTS
+            
+MOVEMPOSTI  MOVE.L  D5,D6              ; Copy our OpCode to D6
+            ANDI.L  #$3F,D6            ; Isolate our EA src bits
+            
+            JSR EAGETSRCEA  
+            
+            MOVE.B  #',',(A1)+
+            ADDQ    #1,D1
+            
+            ; This part is where we get the gross A0-A6/D0-D7 part
+            JSR     EAMOVEMPOSTI
+            
+            RTS
+            
 LEA         *(Implement)
+            MOVE.W  #'LE',(A1)+
+            MOVE.B  #'A',(A1)+
+            ADDQ    #3,D1              ; We added 3 new characters to our IOStringLoc 
             RTS      
             
 Bcc         *(Implement)
@@ -325,6 +383,7 @@ UNKNOWN
         
             RTS
 * Put variables and constants here
+
 
 
 

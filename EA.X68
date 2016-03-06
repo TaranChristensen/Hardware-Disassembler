@@ -85,10 +85,9 @@ EAAN
 EAANI
     MOVE.B  #'(',(A1)+
     MOVE.B  #'A',(A1)+
-    MOVE.B  #'#',(A1)+
-    MOVE.B  #')',(A1)+
     ADD.B   #48,D6      ; Add 48 into D6 to turn num 0 into ASCII 0
     MOVE.B  D6,(A1)+
+    MOVE.B  #')',(A1)+
     ADDQ    #4,D1
     RTS
 ;If the EA is a (An)+ EA    
@@ -96,11 +95,10 @@ EAANI
 EAAPOST
     MOVE.B  #'(',(A1)+
     MOVE.B  #'A',(A1)+
-    MOVE.B  #'#',(A1)+
-    MOVE.B  #')',(A1)+
-    MOVE.B  #'+',(A1)+
     ADD.B   #48,D6      ; Add 48 into D6 to turn num 0 into ASCII 0
     MOVE.B  D6,(A1)+
+    MOVE.B  #')',(A1)+
+    MOVE.B  #'+',(A1)+
     ADDQ    #5,D1
     RTS
 ;If the EA is a -(An) EA    
@@ -109,10 +107,9 @@ EAAPRE
     MOVE.B  #'-',(A1)+
     MOVE.B  #'(',(A1)+
     MOVE.B  #'A',(A1)+
-    MOVE.B  #'#',(A1)+
-    MOVE.B  #')',(A1)+
     ADD.B   #48,D6      ; Add 48 into D6 to turn num 0 into ASCII 0
     MOVE.B  D6,(A1)+
+    MOVE.B  #')',(A1)+
     ADDQ    #5,D1
     RTS 
 *;If the EA is a #<data> EA    
@@ -150,6 +147,116 @@ EAAPRE
 *    BEQ     EAID        ; Immediate Data 
 *    *-----------------------------------------------let fall through? it shouldn't RTS right?
     
+; MOVEM's (A7)+,A0-A6,D0-D7 format
+; Gets the follow-up WORD in order to process it
+EAMOVEMPOSTI
+    MOVE.W  (A2)+,D6    ; Get follow-up word for processing
+    
+    MOVE.L  #$FF,D7     ; Initilize D7 to be our counter
+    
+    ROR.L   #7,D6       ; Shift our new bits seven to the right
+IANSL    ; Increment An Start Loop  
+    ADDQ    #1,D7       ; Itterate D7
+    ROR.L   #1,D6       ; Rotate one bit to the right  
+    CMP.B   #8,D7       ; Check if we've hit A8
+    BEQ     INOA        ; If we have, break the loop
+    BTST    #$00,D6     ; Check the far right bit
+    BEQ     IANSL       ; If it isn't 1, continue checking
+    
+    MOVE.B  #'A',(A1)+
+    
+    ADD.B   #48,D7      ; Add 48 into D7 to turn num 0 into ASCII 0
+    MOVE.B  D7,(A1)+
+    ADDQ    #2,D1
+    
+    SUB.B   #47,D7      ; Balance out out D7 from ASCII conversion
+    ROR.L   #1,D6       ; Rotate one bit to the right  
+    CMP.B   #8,D7       ; Check if we've hit A8
+    BEQ     INOEA       ; If we have, break the loop
+    BTST    #$00,D6     ; Check the far right bit
+    BEQ     INOEA       ; If it is 0, skip past -A
+IANEL    ; Increment An End Loop  
+    ADDQ    #1,D7       ; Itterate D7
+    ROR.L   #1,D6       ; Rotate one bit to the right  
+    CMP.B   #8,D7       ; Check if we've hit A8
+    BEQ     IANELE      ; If we have, break the loop
+    BTST    #$00,D6     ; Check the far right bit
+    BNE     IANEL       ; If it isn't 0, continue checking    
+IANELE
+    SUBQ    #1,D7
+    
+    MOVE.B  #'-',(A1)+
+    MOVE.B  #'A',(A1)+
+    
+    ADD.B   #48,D7      ; Add 48 into D7 to turn num 0 into ASCII 0
+    MOVE.B  D7,(A1)+
+    ADDQ    #3,D1
+    SUB.B   #48,D7      ; SUB 48 into D7 for ASCII conversion
+    BRA     INOEA       ; Branch past the 'No An Skip Label'
+
+INOA     ; No An Skip label 
+    BSET.L  #$1F,D7     ; Set our MSB to equal 1
+ 
+INOEA    ; No An Ending (aka Single An) Skip Label
+    ADD.B   #1,D7       ; Add 1 for 0ing balance
+    BCLR    #$08,D7     ; Incase we're iterated base FF in A
+    ROL.L   D7,D6       ; Rotate our A bits back into view
+    ROL.L   #8,D6       ; Rotate our D bits back into place
+    ROL.L   #1,D6       ; Rotate an extra bit over, to account for the loop
+    MOVE.B  #$FF,D7     ; Initilize D7
+
+IDNSL    ; Increment Dn Start Loop  
+    ADDQ    #1,D7       ; Itterate D7
+    ROR.L   #1,D6       ; Rotate one bit to the right  
+    CMP.B   #8,D7       ; Check if we've hit D8
+    BEQ     ENDEAMOVEMPI ; If we have, break the loop
+    BTST    #$00,D6     ; Check the far right bit
+    BEQ     IDNSL       ; If it isn't 1, continue checking     
+    
+    ; The issue with the below line:
+    ;  We need to skip / if there are no An registers, as we do in INOA
+    ;  We also need to skip / if there are no Dn registers, as we do here
+    ;  However, we need to skip / if there are no An's, but we still need to run
+    ;   the above code to determine the starting Dn, so we use the MSB of D7
+    ;   as a boolean to determine if we had an An
+    BTST    #$1F,D7     ; If our MSB is equal to 1, we have no A
+    BNE     INOA2       ; .. So, skip the /
+    MOVE.B  #'/',(A1)+
+    ADDQ    #1,D1
+INOA2     ; 2nd No An Skip label 
+    BCLR    #$1F,D7     ; If our MSB is set, clear it
+    MOVE.B  #'D',(A1)+
+    ADD.B   #48,D7      ; Add 48 into D7 to turn num 0 into ASCII 0
+    MOVE.B  D7,(A1)+    
+    ADDQ    #2,D1
+    
+    SUB.B   #47,D7      ; Balance out our D7 from ASCII conversion
+    ROR.L   #1,D6       ; Rotate one bit to the right  
+    CMP.B   #8,D7       ; Check if we've hit A8
+    BEQ     ENDEAMOVEMPI  ; If we have, break to the end
+    BTST    #$00,D6     ; Check the far right bit
+    BEQ     ENDEAMOVEMPI ; If it is 0, we have no -Dn
+IDNEL    ; Increment Dn End Loop  
+    ADDQ    #1,D7       ; Itterate D7
+    ROR.L   #1,D6       ; Rotate one bit to the right  
+    CMP.B   #8,D7       ; Check if we've hit A8
+    BEQ     INENLE      ; If we have, break the loop
+    BTST    #$00,D6     ; Check the far right bit
+    BNE     IDNEL       ; If it isn't 0, continue checking    
+INENLE
+    SUBQ    #1,D7
+    
+    MOVE.B  #'-',(A1)+
+    MOVE.B  #'D',(A1)+
+
+    ADD.B   #48,D7      ; Add 48 into D7 to turn num 0 into ASCII 0
+    MOVE.B  D7,(A1)+
+    ADDQ    #3,D1 
+    ; If no Dn, skip to the end
+ENDEAMOVEMPI
+    RTS
+    
+EAMOVEMPRED
 ; If the EA is unknown
 EAUNKN
     MOVE.B  #'<',(A1)+  ; We did this byte-by-byte in case A1 is at an odd register
@@ -160,6 +267,7 @@ EAUNKN
     RTS
 
 * Put variables and constants here
+
 
 
 

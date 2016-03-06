@@ -26,9 +26,10 @@ IOLOOP          LEA     HexStart,A1        Display the prompt and loop it
         
                 CLR.L   D4                 Ensure our counter (D4) is 0 
 
-                JSR     LENGTH_CHECK   
+                JSR     LENGTH_CHECK 
+                CLR.L   D2  
                 CMP.B   #1,D5              if 1 then it passed the tests         
-
+                
                 BEQ     IOASCIItoHEX
                 BRA     IOLOOP
                 
@@ -100,7 +101,7 @@ IOORTAG         OR.B    D3,D2              Store our nybble into D2
                 CMP.B   D4,D1              See if we've read all the characters
                 BNE.S   IOASCIItoHEX       Continue if we haven't
             
-  
+            
                 MOVE.L  #0,StartAddress
                 MOVE.L  D2,StartAddress    Store our StartAddress
                 
@@ -155,7 +156,7 @@ OUTPUTOPCODE    MOVE.L  #0,IOStringLoc     ********** Testing purposes *********
         
                 ; <Testing section>        
                 MOVE.L  StartAddress,A2    Push our start address into A2 
-                MOVE.W  #$C1C1,(A2)+       Push OpCode for MULS D1,D0 into our start address
+                MOVE.L  #$4CDF7FFF,(A2)+   Push OpCode for MOVEM.L (A7)+,A0-A6/D0-D7 into our start address
                 MOVE.W  #$3200,(A2)+       Push OpCode for Move.W D0,D1 into our start address
                 MOVE.W  #$2200,(A2)+       Push OpCode for Move.L D0,D1 into our start address
                 ; </Testing section>
@@ -251,6 +252,7 @@ COUNTER         DS.L    0 keep track of the lines on the screen
 ENTERPROMPT     DC.B    'The screen limit has been reached, please press enter to continue',CR,LF,0
 
 * Put variables and constants herevv
+
 
 
 
