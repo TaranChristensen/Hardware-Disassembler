@@ -156,7 +156,7 @@ OUTPUTOPCODE    MOVE.L  #0,IOStringLoc     ********** Testing purposes *********
         
                 ; <Testing section>        
                 MOVE.L  StartAddress,A2    Push our start address into A2 
-                MOVE.L  #$4CDF7FFF,(A2)+   Push OpCode for MOVEM.L (A7)+,A0-A6/D0-D7 into our start address
+                MOVE.L  #$48A7FFFE,(A2)+   Push OpCode for MOVEM.L (A7)+,A0-A6/D0-D7 into our start address
                 MOVE.W  #$3200,(A2)+       Push OpCode for Move.W D0,D1 into our start address
                 MOVE.W  #$2200,(A2)+       Push OpCode for Move.L D0,D1 into our start address
                 ; </Testing section>

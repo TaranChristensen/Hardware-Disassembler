@@ -226,7 +226,7 @@ MOVEM       *(Implement)
             ADDQ    #6,D1              ; We added 6 new characters to our IOStringLoc 
             
             MOVE.L  D5,D6              ; Copy our OpCode
-            LSR.L   #7,D6              ; Rotate it 7 bits to the right
+            LSR.L   #6,D6              ; Shift it 6 bits to the right
             BTST    #$00,D6            ; If our size bit is 0..
             BEQ     MOVEMW             ; .. Its a MOVEM of size W
             BRA     MOVEML             ; .. Otherwise it's of size L
@@ -248,7 +248,17 @@ MOVEMOP     MOVE.B  #' ',(A1)+         ; Add a spacer into our IOStringLoc
             BEQ     MOVEMPRED          ; If it's 0, our direction is Pre Decrement (eg. Move TO the stack)
             BRA     MOVEMPOSTI         ; Otherwise, it's Post Increment (eg. Move FROM the stack)
             
-MOVEMPRED               
+MOVEMPRED   ; This part is where we get the gross A0-A6/D0-D7 part
+            JSR     EAMOVEMPRED  
+            
+            MOVE.B  #',',(A1)+
+            ADDQ    #1,D1
+            
+            MOVE.L  D5,D6              ; Copy our OpCode to D6
+            ANDI.L  #$3F,D6            ; Isolate our EA src bits
+            
+            JSR EAGETSRCEA  
+          
             RTS
 
 MOVEMPOSTI  MOVE.L  D5,D6              ; Copy our OpCode to D6
@@ -374,11 +384,11 @@ ANDLDN      MOVE.B  #'L',(A1)+
             ADDQ    #1,D1               ; We added 1 byte into D1
             BRA ANDDN
             
-ANDWDN      MOVE.B  #'L',(A1)+
+ANDWDN      MOVE.B  #'W',(A1)+
             ADDQ    #1,D1               ; We added 1 byte into D1
             BRA ANDDN
 
-ANDBDN      MOVE.B  #'L',(A1)+
+ANDBDN      MOVE.B  #'B',(A1)+
             ADDQ    #1,D1               ; We added 1 byte into D1
             BRA ANDDN  
 
