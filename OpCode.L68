@@ -1,6 +1,6 @@
 00001000 Starting Address
 Assembler used: EASy68K Editor/Assembler v5.15.04
-Created On: 3/5/2016 9:56:33 PM
+Created On: 3/7/2016 3:49:38 PM
 
 00000000                             1  *-----------------------------------------------------------
 00000000                             2  * Title      : OpCode
@@ -41,10 +41,10 @@ Created On: 3/5/2016 9:56:33 PM
 0000005C  BC3C 000C                 37              CMP.B   #$0C,D6
 00000060  6700 0254                 38              BEQ     MULSAND     ; MULS or AND opcodes (Implement AND)
 00000064  BC3C 000D                 39              CMP.B   #$0D,D6
-00000068  6700 0362                 40              BEQ     ADDADDA     ; ADD or ADDA (Implement)
+00000068  6700 036A                 40              BEQ     ADDADDA     ; ADD or ADDA (Implement)
 0000006C  BC3C 000E                 41              CMP.B   #$0E,D6 
-00000070  6700 035C                 42              BEQ     ASLSRO      ; ASd (ASR) or LSd (LSL) or ROd (ROL) (Implement)
-00000074  6000 035A                 43              BRA     UNKNOWN  
+00000070  6700 046A                 42              BEQ     ASLSRO      ; ASd (ASR) or LSd (LSL) or ROd (ROL) (Implement)
+00000074  6000 0468                 43              BRA     UNKNOWN  
 00000078                            44     
 00000078                            45  ADDI                                    ; Confirmed first left-most 4 bits of ADDI
 00000078  2C05                      46              MOVE.L  D5,D6               ; Push D5 into D6
@@ -52,7 +52,7 @@ Created On: 3/5/2016 9:56:33 PM
 0000007C  0206 000F                 48              ANDI.B  #$0F,D6             ; Isolate opcode nybble
 00000080  BC3C 0006                 49              CMP.B   #$06,D6             ; If it matches ADDI's left-most middle nybble, branch
 00000084  6700 0006                 50              BEQ     ADDI8               ; First 8 left-most bits of ADDI confirmed 
-00000088  6000 0346                 51              BRA     UNKNOWN             ; else unknown                       
+00000088  6000 0454                 51              BRA     UNKNOWN             ; else unknown                       
 0000008C                            52              
 0000008C                            53  ADDI8                                   ; Confirmed first left-most 8 bits of ADDI
 0000008C                            54  
@@ -67,7 +67,7 @@ Created On: 3/5/2016 9:56:33 PM
 000000AA  BCBC 00000002             63              CMP.L   #$0002,D6          ; See if the size is '10'..
 000000B0  6700 004E                 64              BEQ     ADDIL              ; ..If so, it's ANDI.L
 000000B4                            65              
-000000B4  6000 031A                 66              BRA     UNKNOWN            ; If it isn't any, then it's Unknown
+000000B4  6000 0428                 66              BRA     UNKNOWN            ; If it isn't any, then it's Unknown
 000000B8                            67              
 000000B8                            68  ADDIB       
 000000B8  22FC 41444449             69              MOVE.L  #'ADDI',(A1)+
@@ -191,7 +191,7 @@ Line 140 ERROR: Undefined symbol
 000001DC  BCBC 0000003A            182              CMP.L   #$003A,D6          ; Compare
 000001E2  6700 0030                183              BEQ     JSR                ; Branch
 000001E6                           184              
-000001E6  6000 01E8                185              BRA     UNKNOWN            ; If it doesnt any match, then it's Unknown
+000001E6  6000 02F6                185              BRA     UNKNOWN            ; If it doesnt any match, then it's Unknown
 000001EA                           186  
 000001EA                           187  
 000001EA                           188  ;  Here we assume the first left-most 8 bits have been confirmed: 0100 0010
@@ -235,7 +235,7 @@ Line 140 ERROR: Undefined symbol
 0000022A  5C41                     226              ADDQ    #6,D1              ; We added 6 new characters to our IOStringLoc 
 0000022C                           227              
 0000022C  2C05                     228              MOVE.L  D5,D6              ; Copy our OpCode
-0000022E  EE8E                     229              LSR.L   #7,D6              ; Rotate it 7 bits to the right
+0000022E  EC8E                     229              LSR.L   #6,D6              ; Shift it 6 bits to the right
 00000230  0806 0000                230              BTST    #$00,D6            ; If our size bit is 0..
 00000234  6700 0006                231              BEQ     MOVEMW             ; .. Its a MOVEM of size W
 00000238  6000 000C                232              BRA     MOVEML             ; .. Otherwise it's of size L
@@ -351,133 +351,235 @@ Line 330 ERROR: Undefined symbol
 00000306  5841                     336              ADDQ    #4,D1               ; We added 4 new characters to our IOStringLoc
 00000308                           337              
 00000308  BC3C 0006                338              CMP.B   #%0110,D6            ; See if D6 is size "%100" through "%110"..
-0000030C  6700 0026                339              BEQ     ANDLEA              ; If it is, our OpCode is in the format of..
+0000030C  6700 002E                339              BEQ     ANDLEA              ; If it is, our OpCode is in the format of..
 00000310  BC3C 0005                340              CMP.B   #%101,D6            ; .. Dn ~ <EA> --> <EA>
-00000314  6700 0028                341              BEQ     ANDWEA
+00000314  6700 0030                341              BEQ     ANDWEA
 00000318  BC3C 0004                342              CMP.B   #%100,D6
-0000031C  6700 002A                343              BEQ     ANDBEA
+0000031C  6700 0032                343              BEQ     ANDBEA
 00000320                           344              
 00000320  BC3C 0002                345              CMP.B   #%10,D6             ; See if D6 is size "%000" through "%010"..
-00000324  6700 005A                346              BEQ     ANDLDN              ; If it is, our OpCode is in the format of..
+00000324  6700 0062                346              BEQ     ANDLDN              ; If it is, our OpCode is in the format of..
 00000328  BC3C 0001                347              CMP.B   #%01,D6             ; .. <EA> ~ Dn --> Dn
-0000032C  6700 005C                348              BEQ     ANDWDN
-00000330  6000 0062                349              BRA     ANDBDN              ; == 000 at this point
-00000334                           350              
-00000334  12FC 004C                351  ANDLEA      MOVE.B  #'L',(A1)+
-00000338  5241                     352              ADDQ    #1,D1               ; We added 1 byte into D1
-0000033A  6000 0016                353              BRA     ANDEA
-0000033E                           354              
-0000033E  12FC 0057                355  ANDWEA      MOVE.B  #'W',(A1)+
-00000342  5241                     356              ADDQ    #1,D1               ; We added 1 byte into D1
-00000344  6000 000C                357              BRA     ANDEA
-00000348                           358  
-00000348  12FC 0042                359  ANDBEA      MOVE.B  #'B',(A1)+
-0000034C  5241                     360              ADDQ    #1,D1               ; We added 1 byte into D1
-0000034E  6000 0002                361              BRA     ANDEA
-00000352                           362  
-00000352  12FC 0009                363  ANDEA       MOVE.B  #$09,(A1)+          ; Add a spacer into our IOStringLoc
-00000356  5241                     364              ADDQ    #1,D1               ; We added 4 bytes, aka 4 spaces
-00000358                           365              
-00000358  2C05                     366              MOVE.L  D5,D6
-0000035A  E08E                     367              LSR.L   #8,D6               ; Shift our OpCode a total of 9 bits to the right
-0000035C  E28E                     368              LSR.L   #1,D6               ; 
-0000035E  0286 00000007            369              ANDI.L  #$07,D6             ; Isolate our data register
-00000364                           370              
-Line 371 ERROR: Undefined symbol
-00000364  4EB9 004DBB8E            371              JSR EADN
-0000036A                           372              
-0000036A  12FC 002C                373              MOVE.B  #',',(A1)+
-0000036E  5241                     374              ADDQ    #1,D1
-00000370                           375              
-00000370  2C05                     376              MOVE.L  D5,D6               ; Copy our OpCode again
-00000372  0286 0000003F            377              ANDI.L  #$3F,D6             ; Isolate our EA bits
+0000032C  6700 0064                348              BEQ     ANDWDN
+00000330  BC3C 0000                349              CMP.B   #%00,D6
+00000334  6700 0066                350              BEQ     ANDBDN              ; == 000 at this point
+00000338                           351              
+00000338  6000 01A4                352              BRA     UNKNOWN
+0000033C                           353              
+0000033C  12FC 004C                354  ANDLEA      MOVE.B  #'L',(A1)+
+00000340  5241                     355              ADDQ    #1,D1               ; We added 1 byte into D1
+00000342  6000 0016                356              BRA     ANDEA
+00000346                           357              
+00000346  12FC 0057                358  ANDWEA      MOVE.B  #'W',(A1)+
+0000034A  5241                     359              ADDQ    #1,D1               ; We added 1 byte into D1
+0000034C  6000 000C                360              BRA     ANDEA
+00000350                           361  
+00000350  12FC 0042                362  ANDBEA      MOVE.B  #'B',(A1)+
+00000354  5241                     363              ADDQ    #1,D1               ; We added 1 byte into D1
+00000356  6000 0002                364              BRA     ANDEA
+0000035A                           365  
+0000035A  12FC 0009                366  ANDEA       MOVE.B  #$09,(A1)+          ; Add a spacer into our IOStringLoc
+0000035E  5241                     367              ADDQ    #1,D1               ; We added 4 bytes, aka 4 spaces
+00000360                           368              
+00000360  2C05                     369              MOVE.L  D5,D6
+00000362  E08E                     370              LSR.L   #8,D6               ; Shift our OpCode a total of 9 bits to the right
+00000364  E28E                     371              LSR.L   #1,D6               ; 
+00000366  0286 00000007            372              ANDI.L  #$07,D6             ; Isolate our data register
+0000036C                           373              
+Line 374 ERROR: Undefined symbol
+0000036C  4EB9 004DBB8E            374              JSR EADN
+00000372                           375              
+00000372  12FC 002C                376              MOVE.B  #',',(A1)+
+00000376  5241                     377              ADDQ    #1,D1
 00000378                           378              
-Line 379 ERROR: Undefined symbol
-00000378  4EB9 004DBB8E            379              JSR EAGETSRCEA  
-0000037E                           380              
-0000037E  4E75                     381              RTS
-00000380                           382              
-00000380  12FC 004C                383  ANDLDN      MOVE.B  #'L',(A1)+
-00000384  5241                     384              ADDQ    #1,D1               ; We added 1 byte into D1
-00000386  6000 0016                385              BRA ANDDN
-0000038A                           386              
-0000038A  12FC 0057                387  ANDWDN      MOVE.B  #'W',(A1)+
-0000038E  5241                     388              ADDQ    #1,D1               ; We added 1 byte into D1
-00000390  6000 000C                389              BRA ANDDN
-00000394                           390  
-00000394  12FC 0042                391  ANDBDN      MOVE.B  #'B',(A1)+
-00000398  5241                     392              ADDQ    #1,D1               ; We added 1 byte into D1
-0000039A  6000 0002                393              BRA ANDDN  
-0000039E                           394  
-0000039E                           395  ANDDN
-0000039E  12FC 0009                396              MOVE.B  #$09,(A1)+          ; Add a spacer into our IOStringLoc
-000003A2  5241                     397              ADDQ    #1,D1               ; We added 4 bytes, aka 4 spaces
-000003A4                           398              
-000003A4  2C05                     399              MOVE.L  D5,D6               ; Copy our OpCode again
-000003A6  0286 0000003F            400              ANDI.L  #$3F,D6             ; Isolate our EA bits
+00000378  2C05                     379              MOVE.L  D5,D6               ; Copy our OpCode again
+0000037A  0286 0000003F            380              ANDI.L  #$3F,D6             ; Isolate our EA bits
+00000380                           381              
+Line 382 ERROR: Undefined symbol
+00000380  4EB9 004DBB8E            382              JSR EAGETSRCEA  
+00000386                           383              
+00000386  4E75                     384              RTS
+00000388                           385              
+00000388  12FC 004C                386  ANDLDN      MOVE.B  #'L',(A1)+
+0000038C  5241                     387              ADDQ    #1,D1               ; We added 1 byte into D1
+0000038E  6000 0016                388              BRA ANDDN
+00000392                           389              
+00000392  12FC 0057                390  ANDWDN      MOVE.B  #'W',(A1)+
+00000396  5241                     391              ADDQ    #1,D1               ; We added 1 byte into D1
+00000398  6000 000C                392              BRA ANDDN
+0000039C                           393  
+0000039C  12FC 0042                394  ANDBDN      MOVE.B  #'B',(A1)+
+000003A0  5241                     395              ADDQ    #1,D1               ; We added 1 byte into D1
+000003A2  6000 0002                396              BRA ANDDN  
+000003A6                           397  
+000003A6                           398  ANDDN
+000003A6  12FC 0009                399              MOVE.B  #$09,(A1)+          ; Add a spacer into our IOStringLoc
+000003AA  5241                     400              ADDQ    #1,D1               ; We added 4 bytes, aka 4 spaces
 000003AC                           401              
-Line 402 ERROR: Undefined symbol
-000003AC  4EB9 004DBB8E            402              JSR EAGETSRCEA              
-000003B2                           403              
-000003B2  12FC 002C                404              MOVE.B  #',',(A1)+
-000003B6  5241                     405              ADDQ    #1,D1
-000003B8                           406              
-000003B8  2C05                     407              MOVE.L  D5,D6
-000003BA  E08E                     408              LSR.L   #8,D6               ; Shift our OpCode a total of 9 bits to the right
-000003BC  E28E                     409              LSR.L   #1,D6               ; 
-000003BE  0286 00000007            410              ANDI.L  #$07,D6             ; Isolate our data register
-000003C4                           411              
-Line 412 ERROR: Undefined symbol
-000003C4  4EB9 004DBB8E            412              JSR EADN
-000003CA                           413              
-000003CA  4E75                     414              RTS
-000003CC                           415  
-000003CC                           416  ; This label determines if the code is either ADD or ADDA           
-000003CC                           417  ADDADDA     *(Implement)
-000003CC                           418                   
-000003CC  4E75                     419              RTS
-000003CE                           420  
-000003CE                           421  ; This label determines if the code is either ASd (ASR) or LSd (LSL) or ROd (ROL) 
-000003CE                           422  ASLSRO      *(Implement)
-000003CE                           423                   
-000003CE  4E75                     424              RTS
-000003D0                           425  UNKNOWN
-000003D0  22FC 3F3F3F3F            426              MOVE.L  #'????',(A1)+
-000003D6  5841                     427              ADDQ    #4,D1           ; We added 4 new characters to our IOStringLoc 
-000003D8                           428              
-000003D8  22FC 20202020            429              MOVE.L  #'    ',(A1)+       ; Add a spacer into our IOStringLoc
-000003DE  5841                     430              ADDQ    #4,D1               ; We added 4 bytes, aka 4 spaces
-000003E0  32FC 2020                431              MOVE.W  #'  ',(A1)+         ; Add a spacer into our IOStringLoc
-000003E4  5441                     432              ADDQ    #2,D1               ; We added 2 bytes, aka 2 spaces
-000003E6                           433          
-000003E6  4E75                     434              RTS
-000003E8                           435  * Put variables and constants here
-000003E8                           436  
-Line 437 WARNING: END directive missing, starting address not set
+000003AC  2C05                     402              MOVE.L  D5,D6               ; Copy our OpCode again
+000003AE  0286 0000003F            403              ANDI.L  #$3F,D6             ; Isolate our EA bits
+000003B4                           404              
+Line 405 ERROR: Undefined symbol
+000003B4  4EB9 004DBB8E            405              JSR EAGETSRCEA              
+000003BA                           406              
+000003BA  12FC 002C                407              MOVE.B  #',',(A1)+
+000003BE  5241                     408              ADDQ    #1,D1
+000003C0                           409              
+000003C0  2C05                     410              MOVE.L  D5,D6
+000003C2  E08E                     411              LSR.L   #8,D6               ; Shift our OpCode a total of 9 bits to the right
+000003C4  E28E                     412              LSR.L   #1,D6               ; 
+000003C6  0286 00000007            413              ANDI.L  #$07,D6             ; Isolate our data register
+000003CC                           414              
+Line 415 ERROR: Undefined symbol
+000003CC  4EB9 004DBB8E            415              JSR EADN
+000003D2                           416              
+000003D2  4E75                     417              RTS
+000003D4                           418  
+000003D4                           419  ; This label determines if the code is either ADD or ADDA           
+000003D4  2C05                     420  ADDADDA     MOVE.L  D5,D6               ; Copy D5 into D6
+000003D6  EC8E                     421              LSR.L   #6,D6               ; Shift the size bits to the far right
+000003D8  0206 0007                422              ANDI.B  #$7,D6              ; Isolate the size bits
+000003DC                           423              
+000003DC  BC3C 0006                424              CMP.B   #%0110,D6           ; See if D6 is size "%100" through "%110"..
+000003E0  6700 0074                425              BEQ     ADDLEA              ; If it is, our OpCode is in the format of..
+000003E4  BC3C 0005                426              CMP.B   #%101,D6            ; .. Dn ~ <EA> --> <EA>
+000003E8  6700 007E                427              BEQ     ADDWEA
+000003EC  BC3C 0004                428              CMP.B   #%100,D6
+000003F0  6700 0088                429              BEQ     ADDBEA
+000003F4                           430              
+000003F4  BC3C 0002                431              CMP.B   #%10,D6             ; See if D6 is size "%000" through "%010"..
+000003F8  6700 0026                432              BEQ     ADDLDN              ; If it is, our OpCode is in the format of..
+000003FC  BC3C 0001                433              CMP.B   #%01,D6             ; .. <EA> ~ Dn --> Dn
+00000400  6700 0030                434              BEQ     ADDWDN
+00000404  BC3C 0000                435              CMP.B   #%00,D6
+00000408  6700 003A                436              BEQ     ADDBDN              ; == 000 at this point
+0000040C                           437              
+0000040C  BC3C 0003                438              CMP.B   #%011,D6            ; ADDA Word Operation <EA> -> An 
+00000410  6700 007A                439              BEQ     ADDAW
+00000414  BC3C 0007                440              CMP.B   #%111,D6            ; ADDA Word Operation <EA> -> An  
+00000418  6700 0084                441              BEQ     ADDAL
+0000041C  6000 00C0                442              BRA     UNKNOWN
+00000420                           443              
+00000420  22FC 4144442E            444  ADDLDN      MOVE.L  #'ADD.',(A1)+
+00000426  5841                     445              ADDQ    #4,D1               ; We added 4 new characters to our IOStringLoc
+00000428  12FC 004C                446              MOVE.B  #'L',(A1)+
+0000042C  5241                     447              ADDQ    #1,D1               ; We added 1 byte into D1
+0000042E  6000 FF76                448              BRA ANDDN
+00000432                           449              
+00000432  22FC 4144442E            450  ADDWDN      MOVE.L  #'ADD.',(A1)+
+00000438  5841                     451              ADDQ    #4,D1               ; We added 4 new characters to our IOStringLoc
+0000043A  12FC 0057                452              MOVE.B  #'W',(A1)+
+0000043E  5241                     453              ADDQ    #1,D1               ; We added 1 byte into D1
+00000440  6000 FF64                454              BRA ANDDN
+00000444                           455  
+00000444  22FC 4144442E            456  ADDBDN      MOVE.L  #'ADD.',(A1)+
+0000044A  5841                     457              ADDQ    #4,D1               ; We added 4 new characters to our IOStringLoc
+0000044C  12FC 0042                458              MOVE.B  #'B',(A1)+
+00000450  5241                     459              ADDQ    #1,D1               ; We added 1 byte into D1
+00000452  6000 FF52                460              BRA ANDDN  
+00000456                           461              
+00000456  22FC 4144442E            462  ADDLEA      MOVE.L  #'ADD.',(A1)+
+0000045C  5841                     463              ADDQ    #4,D1               ; We added 4 new characters to our IOStringLoc
+0000045E  12FC 004C                464              MOVE.B  #'L',(A1)+
+00000462  5241                     465              ADDQ    #1,D1               ; We added 1 byte into D1
+00000464  6000 FEF4                466              BRA     ANDEA
+00000468                           467              
+00000468  22FC 4144442E            468  ADDWEA      MOVE.L  #'ADD.',(A1)+
+0000046E  5841                     469              ADDQ    #4,D1               ; We added 4 new characters to our IOStringLoc
+00000470  12FC 0057                470              MOVE.B  #'W',(A1)+
+00000474  5241                     471              ADDQ    #1,D1               ; We added 1 byte into D1
+00000476  6000 FEE2                472              BRA     ANDEA
+0000047A                           473  
+0000047A  22FC 4144442E            474  ADDBEA      MOVE.L  #'ADD.',(A1)+
+00000480  5841                     475              ADDQ    #4,D1               ; We added 4 new characters to our IOStringLoc
+00000482  12FC 0042                476              MOVE.B  #'B',(A1)+
+00000486  5241                     477              ADDQ    #1,D1               ; We added 1 byte into D1
+00000488  6000 FED0                478              BRA     ANDEA
+0000048C                           479              
+0000048C  22FC 41444441            480  ADDAW       MOVE.L  #'ADDA',(A1)+
+00000492  5841                     481              ADDQ    #4,D1               ; We added 4 new characters to our IOStringLoc
+00000494  32FC 2E57                482              MOVE.W  #'.W',(A1)+
+00000498  5441                     483              ADDQ    #2,D1               ; We added 1 byte into D1
+0000049A  6000 0014                484              BRA     ADDAN
+0000049E                           485              
+0000049E  22FC 41444441            486  ADDAL       MOVE.L  #'ADDA',(A1)+
+000004A4  5841                     487              ADDQ    #4,D1               ; We added 4 new characters to our IOStringLoc
+000004A6  32FC 2E4C                488              MOVE.W  #'.L',(A1)+
+000004AA  5441                     489              ADDQ    #2,D1               ; We added 1 byte into D1
+000004AC  6000 0002                490              BRA     ADDAN
+000004B0                           491         
+000004B0                           492  ADDAN
+000004B0  12FC 0009                493              MOVE.B  #$09,(A1)+          ; Add a spacer into our IOStringLoc
+000004B4  5241                     494              ADDQ    #1,D1               ; We added 4 bytes, aka 4 spaces
+000004B6                           495              
+000004B6  2C05                     496              MOVE.L  D5,D6               ; Copy our OpCode again
+000004B8  0286 0000003F            497              ANDI.L  #$3F,D6             ; Isolate our EA bits
+000004BE                           498              
+Line 499 ERROR: Undefined symbol
+000004BE  4EB9 004DBB8E            499              JSR EAGETSRCEA              
+000004C4                           500              
+000004C4  12FC 002C                501              MOVE.B  #',',(A1)+
+000004C8  5241                     502              ADDQ    #1,D1
+000004CA                           503              
+000004CA  2C05                     504              MOVE.L  D5,D6
+000004CC  E08E                     505              LSR.L   #8,D6               ; Shift our OpCode a total of 9 bits to the right
+000004CE  E28E                     506              LSR.L   #1,D6               ; 
+000004D0  0286 00000007            507              ANDI.L  #$07,D6             ; Isolate our data register
+000004D6                           508              
+Line 509 ERROR: Undefined symbol
+000004D6  4EB9 004DBB8E            509              JSR EAAN
+000004DC                           510                   
+000004DC                           511  ; This label determines if the code is either ASd (ASR) or LSd (LSL) or ROd (ROL) 
+000004DC                           512  ASLSRO      *(Implement)
+000004DC                           513                   
+000004DC  4E75                     514              RTS
+000004DE                           515  UNKNOWN
+000004DE  22FC 3F3F3F3F            516              MOVE.L  #'????',(A1)+
+000004E4  5841                     517              ADDQ    #4,D1           ; We added 4 new characters to our IOStringLoc 
+000004E6                           518              
+000004E6  22FC 20202020            519              MOVE.L  #'    ',(A1)+       ; Add a spacer into our IOStringLoc
+000004EC  5841                     520              ADDQ    #4,D1               ; We added 4 bytes, aka 4 spaces
+000004EE  32FC 2020                521              MOVE.W  #'  ',(A1)+         ; Add a spacer into our IOStringLoc
+000004F2  5441                     522              ADDQ    #2,D1               ; We added 2 bytes, aka 2 spaces
+000004F4                           523          
+000004F4  4E75                     524              RTS
+000004F6                           525  * Put variables and constants here
+000004F6                           526  
+000004F6                           527  
+Line 528 WARNING: END directive missing, starting address not set
 
-15 errors detected
+17 errors detected
 1 warning generated
 
 
 SYMBOL TABLE INFORMATION
 Symbol-name         Value
 -------------------------
-ADDADDA             3CC
+ADDADDA             3D4
+ADDAL               49E
+ADDAN               4B0
+ADDAW               48C
+ADDBDN              444
+ADDBEA              47A
 ADDI                78
 ADDI8               8C
 ADDIB               B8
 ADDIL               100
 ADDIW               DC
+ADDLDN              420
+ADDLEA              456
+ADDWDN              432
+ADDWEA              468
 AND                 300
-ANDBDN              394
-ANDBEA              348
-ANDDN               39E
-ANDEA               352
-ANDLDN              380
-ANDLEA              334
-ANDWDN              38A
-ANDWEA              33E
-ASLSRO              3CE
+ANDBDN              39C
+ANDBEA              350
+ANDDN               3A6
+ANDEA               35A
+ANDLDN              388
+ANDLEA              33C
+ANDWDN              392
+ANDWEA              346
+ASLSRO              4DC
 BCC                 2AC
 CLR                 1EA
 CMP                 2B4
@@ -502,4 +604,4 @@ NOP                 1EC
 OPGETCODE           0
 RTS                 200
 SUB                 2B2
-UNKNOWN             3D0
+UNKNOWN             4DE

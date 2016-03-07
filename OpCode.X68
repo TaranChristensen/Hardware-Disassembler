@@ -346,7 +346,10 @@ AND         MOVE.L  #'AND.',(A1)+
             BEQ     ANDLDN              ; If it is, our OpCode is in the format of..
             CMP.B   #%01,D6             ; .. <EA> ~ Dn --> Dn
             BEQ     ANDWDN
-            BRA     ANDBDN              ; == 000 at this point
+            CMP.B   #%00,D6
+            BEQ     ANDBDN              ; == 000 at this point
+            
+            BRA     UNKNOWN
             
 ANDLEA      MOVE.B  #'L',(A1)+
             ADDQ    #1,D1               ; We added 1 byte into D1
@@ -414,10 +417,97 @@ ANDDN
             RTS
 
 ; This label determines if the code is either ADD or ADDA           
-ADDADDA     *(Implement)
-                 
-            RTS
+ADDADDA     MOVE.L  D5,D6               ; Copy D5 into D6
+            LSR.L   #6,D6               ; Shift the size bits to the far right
+            ANDI.B  #$7,D6              ; Isolate the size bits
+            
+            CMP.B   #%0110,D6           ; See if D6 is size "%100" through "%110"..
+            BEQ     ADDLEA              ; If it is, our OpCode is in the format of..
+            CMP.B   #%101,D6            ; .. Dn ~ <EA> --> <EA>
+            BEQ     ADDWEA
+            CMP.B   #%100,D6
+            BEQ     ADDBEA
+            
+            CMP.B   #%10,D6             ; See if D6 is size "%000" through "%010"..
+            BEQ     ADDLDN              ; If it is, our OpCode is in the format of..
+            CMP.B   #%01,D6             ; .. <EA> ~ Dn --> Dn
+            BEQ     ADDWDN
+            CMP.B   #%00,D6
+            BEQ     ADDBDN              ; == 000 at this point
+            
+            CMP.B   #%011,D6            ; ADDA Word Operation <EA> -> An 
+            BEQ     ADDAW
+            CMP.B   #%111,D6            ; ADDA Word Operation <EA> -> An  
+            BEQ     ADDAL
+            BRA     UNKNOWN
+            
+ADDLDN      MOVE.L  #'ADD.',(A1)+
+            ADDQ    #4,D1               ; We added 4 new characters to our IOStringLoc
+            MOVE.B  #'L',(A1)+
+            ADDQ    #1,D1               ; We added 1 byte into D1
+            BRA ANDDN
+            
+ADDWDN      MOVE.L  #'ADD.',(A1)+
+            ADDQ    #4,D1               ; We added 4 new characters to our IOStringLoc
+            MOVE.B  #'W',(A1)+
+            ADDQ    #1,D1               ; We added 1 byte into D1
+            BRA ANDDN
 
+ADDBDN      MOVE.L  #'ADD.',(A1)+
+            ADDQ    #4,D1               ; We added 4 new characters to our IOStringLoc
+            MOVE.B  #'B',(A1)+
+            ADDQ    #1,D1               ; We added 1 byte into D1
+            BRA ANDDN  
+            
+ADDLEA      MOVE.L  #'ADD.',(A1)+
+            ADDQ    #4,D1               ; We added 4 new characters to our IOStringLoc
+            MOVE.B  #'L',(A1)+
+            ADDQ    #1,D1               ; We added 1 byte into D1
+            BRA     ANDEA
+            
+ADDWEA      MOVE.L  #'ADD.',(A1)+
+            ADDQ    #4,D1               ; We added 4 new characters to our IOStringLoc
+            MOVE.B  #'W',(A1)+
+            ADDQ    #1,D1               ; We added 1 byte into D1
+            BRA     ANDEA
+
+ADDBEA      MOVE.L  #'ADD.',(A1)+
+            ADDQ    #4,D1               ; We added 4 new characters to our IOStringLoc
+            MOVE.B  #'B',(A1)+
+            ADDQ    #1,D1               ; We added 1 byte into D1
+            BRA     ANDEA
+            
+ADDAW       MOVE.L  #'ADDA',(A1)+
+            ADDQ    #4,D1               ; We added 4 new characters to our IOStringLoc
+            MOVE.W  #'.W',(A1)+
+            ADDQ    #2,D1               ; We added 1 byte into D1
+            BRA     ADDAN
+            
+ADDAL       MOVE.L  #'ADDA',(A1)+
+            ADDQ    #4,D1               ; We added 4 new characters to our IOStringLoc
+            MOVE.W  #'.L',(A1)+
+            ADDQ    #2,D1               ; We added 1 byte into D1
+            BRA     ADDAN
+       
+ADDAN
+            MOVE.B  #$09,(A1)+          ; Add a spacer into our IOStringLoc
+            ADDQ    #1,D1               ; We added 4 bytes, aka 4 spaces
+            
+            MOVE.L  D5,D6               ; Copy our OpCode again
+            ANDI.L  #$3F,D6             ; Isolate our EA bits
+            
+            JSR EAGETSRCEA              
+            
+            MOVE.B  #',',(A1)+
+            ADDQ    #1,D1
+            
+            MOVE.L  D5,D6
+            LSR.L   #8,D6               ; Shift our OpCode a total of 9 bits to the right
+            LSR.L   #1,D6               ; 
+            ANDI.L  #$07,D6             ; Isolate our data register
+            
+            JSR EAAN
+                 
 ; This label determines if the code is either ASd (ASR) or LSd (LSL) or ROd (ROL) 
 ASLSRO      *(Implement)
                  
@@ -433,6 +523,7 @@ UNKNOWN
         
             RTS
 * Put variables and constants here
+
 
 
 *~Font name~Courier New~
