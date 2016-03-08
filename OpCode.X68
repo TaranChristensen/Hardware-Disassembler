@@ -50,7 +50,7 @@ ADDI                                    ; Confirmed first left-most 4 bits of AD
             BEQ     ADDI8               ; First 8 left-most bits of ADDI confirmed 
             BRA     UNKNOWN             ; else unknown                       
             
-ADDI8                                   ; Confirmed first left-most 8 bits of ADDI
+ADDI8                                   ; Confirmed first left-most 8 bits of ADDI: 0000 0110
 
             MOVE.L  D5,D6              ; Push D5 into D6 (Copy OPcode over isolated nybble)
             LSR.L   #6,D6              ; Shift six bits to the right
@@ -68,43 +68,28 @@ ADDI8                                   ; Confirmed first left-most 8 bits of AD
 ADDIB       
             MOVE.L  #'ADDI',(A1)+
             MOVE.W  #'.B',(A1)+
-            ADDQ    #6,D1              ; We added 6 new characters to our IOStringLoc 
-            
-            MOVE.L  #'    ',(A1)+      ; Add a spacer into our IOStringLoc
-            ADDQ    #4,D1              ; We added 4 bytes, aka 4 spaces
-            
-            MOVE.L  D5,D6              ; Push D5 into D6
-            ANDI.L  #$003F,D6          ; Isolate the Src EA bits 
-            JSR EAGETSRCEA             ; Find and print the code stored in D6
-            
-            RTS
+            ADDQ    #6,D1              ; We added 6 new characters to our IOStringLoc
+            BRA     ADDIOP
             
 ADDIW       
             MOVE.L  #'ADDI',(A1)+
             MOVE.W  #'.W',(A1)+
             ADDQ    #6,D1              ; We added 6 new characters to our IOStringLoc 
-            
-            MOVE.L  #'    ',(A1)+      ; Add a spacer into our IOStringLoc
-            ADDQ    #4,D1              ; We added 4 bytes, aka 4 spaces
-            
-            MOVE.L  D5,D6              ; Push D5 into D6
-            ANDI.L  #$003F,D6          ; Isolate the Src EA bits 
-            JSR EAGETSRCEA             ; Find and print the code stored in D6
-            RTS
+            BRA     ADDIOP
             
 ADDIL      
             MOVE.L  #'ADDI',(A1)+
             MOVE.W  #'.L',(A1)+
             ADDQ    #6,D1              ; We added 6 new characters to our IOStringLoc 
-            
-            MOVE.L  #'    ',(A1)+      ; Add a spacer into our IOStringLoc
+            BRA     ADDIOP
+
+ADDIOP      MOVE.L  #'    ',(A1)+      ; Add a spacer into our IOStringLoc
             ADDQ    #4,D1              ; We added 4 bytes, aka 4 spaces
             
             MOVE.L  D5,D6              ; Push D5 into D6
             ANDI.L  #$003F,D6          ; Isolate the Src EA bits 
-            JSR EAGETSRCEA             ; Find and print the code stored in D6
-                
-            RTS 
+            JSR EAGETSRCEA             ; Find and print the code stored in D6 
+            RTS
               
 MOVEB       MOVE.L  #'MOVE',(A1)+
             MOVE.W  #'.B',(A1)+
@@ -186,7 +171,41 @@ CNRJML
 
 
 ;  Here we assume the first left-most 8 bits have been confirmed: 0100 0010
-CLR         *(Implement)
+CLR         
+            MOVE.L  D5,D6              ; Push D5 into D6
+            LSR.L   #6,D6              ; Shift six bits to the right
+            ANDI.L  #$0003,D6          ; Isolate the two size bits
+                       
+            CMP.L   #$0000,D6          ; See if the size is '00'..
+            BEQ     CLRB               ; ..If so, it's CLR.B
+            CMP.L   #$0001,D6          ; See if the size is '01'..
+            BEQ     CLRW               ; ..If so, it's CLR.W
+            CMP.L   #$0002,D6          ; See if the size is '10'..
+            BEQ     CLRL               ; ..If so, it's CLR.L
+            
+            BRA     UNKNOWN            ; If it isn't any, then it's Unknown
+            
+CLRB        MOVE.L  #'CLR',(A1)+
+            MOVE.W  #'.B',(A1)+
+            ADDQ    #5,D1              ; We added 5 new characters to our IOStringLoc 
+            BRA     CLROP
+            
+CLRW        MOVE.L  #'CLR',(A1)+
+            MOVE.W  #'.W',(A1)+
+            ADDQ    #5,D1              ; We added 5 new characters to our IOStringLoc 
+            BRA     CLROP
+
+CLRL        MOVE.L  #'CLR',(A1)+
+            MOVE.W  #'.L',(A1)+
+            ADDQ    #5,D1              ; We added 5 new characters to our IOStringLoc 
+            BRA     CLROP
+            
+CLROP       MOVE.L  #'    ',(A1)+      ; Add a spacer into our IOStringLoc
+            ADDQ    #4,D1              ; We added 4 bytes, aka 4 spaces
+            
+            MOVE.L  D5,D6              ; Push D5 into D6
+            ANDI.L  #$003F,D6          ; Isolate the Src EA bits 
+            JSR EAGETSRCEA             ; Find and print the code stored in D6
 
             RTS
             
@@ -803,6 +822,7 @@ UNKNOWN
         
             RTS
 * Put variables and constants here
+
 
 
 
