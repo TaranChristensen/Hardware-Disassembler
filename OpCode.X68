@@ -35,9 +35,9 @@ OPGETCODE   MOVE.W  (A2)+,D5    ; Push our OpCode into D5
             CMP.B   #$0B,D6
             BEQ     CMP         ; CMP (Implement)
             CMP.B   #$0C,D6
-            BEQ     MULSAND     ; MULS or AND opcodes (Implement AND)
+            BEQ     MULSAND     ; MULS or AND opcodes
             CMP.B   #$0D,D6
-            BEQ     ADDADDA     ; ADD or ADDA (Implement)
+            BEQ     ADDADDA     ; ADD or ADDA
             CMP.B   #$0E,D6 
             BEQ     ASLSRO      ; ASd (ASR) or LSd (LSL) or ROd (ROL) (Implement)
             BRA     UNKNOWN  
@@ -295,9 +295,63 @@ DIVU        *(Implement)
             RTS
             
 SUB         *(Implement)
+            MOVE.L  D5,D6               ; Copy D5 into D6
+            LSR.L   #6,D6               ; Shift the size bits to the far right
+            ANDI.B  #$7,D6              ; Isolate the size bits    
                  
-            RTS
-  
+            CMP.B   #%0110,D6            ; See if D6 is size "%100" through "%110"..
+            BEQ     SUBLEA              ; If it is, our OpCode is in the format of..
+            CMP.B   #%101,D6            ; .. Dn ~ <EA> --> <EA>
+            BEQ     SUBWEA
+            CMP.B   #%100,D6
+            BEQ     SUBBEA
+            
+            CMP.B   #%10,D6             ; See if D6 is size "%000" through "%010"..
+            BEQ     SUBLDN              ; If it is, our OpCode is in the format of..
+            CMP.B   #%01,D6             ; .. <EA> ~ Dn --> Dn
+            BEQ     SUBWDN
+            CMP.B   #%00,D6
+            BEQ     SUBBDN              ; == 000 at this point
+            
+            BRA     UNKNOWN
+            
+SUBLEA      MOVE.L  #'SUB.',(A1)+
+            ADDQ    #4,D1               ; We added 4 new characters to our IOStringLoc
+            MOVE.B  #'L',(A1)+
+            ADDQ    #1,D1               ; We added 1 byte into D1
+            BRA     ANDEA
+            
+SUBWEA      MOVE.L  #'SUB.',(A1)+
+            ADDQ    #4,D1               ; We added 4 new characters to our IOStringLoc
+            MOVE.B  #'W',(A1)+
+            ADDQ    #1,D1               ; We added 1 byte into D1
+            BRA     ANDEA
+
+SUBBEA      MOVE.L  #'SUB.',(A1)+
+            ADDQ    #4,D1               ; We added 4 new characters to our IOStringLoc
+            MOVE.B  #'B',(A1)+
+            ADDQ    #1,D1               ; We added 1 byte into D1
+            BRA     ANDEA
+
+SUBLDN      MOVE.L  #'SUB.',(A1)+
+            ADDQ    #4,D1               ; We added 4 new characters to our IOStringLoc
+            MOVE.B  #'L',(A1)+
+            ADDQ    #1,D1               ; We added 1 byte into D1
+            BRA ANDDN
+            
+SUBWDN      MOVE.L  #'SUB.',(A1)+
+            ADDQ    #4,D1               ; We added 4 new characters to our IOStringLoc
+            MOVE.B  #'W',(A1)+
+            ADDQ    #1,D1               ; We added 1 byte into D1
+            BRA ANDDN
+
+SUBBDN      MOVE.L  #'SUB.',(A1)+
+            ADDQ    #4,D1               ; We added 4 new characters to our IOStringLoc
+            MOVE.B  #'B',(A1)+
+            ADDQ    #1,D1               ; We added 1 byte into D1
+            BRA ANDDN  
+
+
 CMP         *(Implement)
                  
             RTS         
@@ -332,10 +386,7 @@ MULS        MOVE.L  #'MULS',(A1)+
             RTS
             
 ; At this point, we know D6 is the size of our opcode
-AND         MOVE.L  #'AND.',(A1)+
-            ADDQ    #4,D1               ; We added 4 new characters to our IOStringLoc
-            
-            CMP.B   #%0110,D6            ; See if D6 is size "%100" through "%110"..
+AND         CMP.B   #%0110,D6            ; See if D6 is size "%100" through "%110"..
             BEQ     ANDLEA              ; If it is, our OpCode is in the format of..
             CMP.B   #%101,D6            ; .. Dn ~ <EA> --> <EA>
             BEQ     ANDWEA
@@ -351,15 +402,21 @@ AND         MOVE.L  #'AND.',(A1)+
             
             BRA     UNKNOWN
             
-ANDLEA      MOVE.B  #'L',(A1)+
+ANDLEA      MOVE.L  #'AND.',(A1)+
+            ADDQ    #4,D1               ; We added 4 new characters to our IOStringLoc
+            MOVE.B  #'L',(A1)+
             ADDQ    #1,D1               ; We added 1 byte into D1
             BRA     ANDEA
             
-ANDWEA      MOVE.B  #'W',(A1)+
+ANDWEA      MOVE.L  #'AND.',(A1)+
+            ADDQ    #4,D1               ; We added 4 new characters to our IOStringLoc
+            MOVE.B  #'W',(A1)+
             ADDQ    #1,D1               ; We added 1 byte into D1
             BRA     ANDEA
 
-ANDBEA      MOVE.B  #'B',(A1)+
+ANDBEA      MOVE.L  #'AND.',(A1)+
+            ADDQ    #4,D1               ; We added 4 new characters to our IOStringLoc
+            MOVE.B  #'B',(A1)+
             ADDQ    #1,D1               ; We added 1 byte into D1
             BRA     ANDEA
 
@@ -383,15 +440,21 @@ ANDEA       MOVE.B  #$09,(A1)+          ; Add a spacer into our IOStringLoc
             
             RTS
             
-ANDLDN      MOVE.B  #'L',(A1)+
+ANDLDN      MOVE.L  #'AND.',(A1)+
+            ADDQ    #4,D1               ; We added 4 new characters to our IOStringLoc
+            MOVE.B  #'L',(A1)+
             ADDQ    #1,D1               ; We added 1 byte into D1
             BRA ANDDN
             
-ANDWDN      MOVE.B  #'W',(A1)+
+ANDWDN      MOVE.L  #'AND.',(A1)+
+            ADDQ    #4,D1               ; We added 4 new characters to our IOStringLoc
+            MOVE.B  #'W',(A1)+
             ADDQ    #1,D1               ; We added 1 byte into D1
             BRA ANDDN
 
-ANDBDN      MOVE.B  #'B',(A1)+
+ANDBDN      MOVE.L  #'AND.',(A1)+
+            ADDQ    #4,D1               ; We added 4 new characters to our IOStringLoc
+            MOVE.B  #'B',(A1)+
             ADDQ    #1,D1               ; We added 1 byte into D1
             BRA ANDDN  
 
