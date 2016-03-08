@@ -304,10 +304,33 @@ Bcc         *(Implement)
             RTS
             
 MOVEQ       *(Implement)
-                 
+            MOVE.L  #'MOVE',(A1)+
+            MOVE.B  #'Q',(A1)+
+            ADDQ    #5,D1               ; We added 4 new characters to our IOStringLoc
+            
+            MOVE.B  #' ',(A1)+
+            MOVE.W  #'  ',(A1)+         ; Add a spacer into our IOStringLoc
+            ADDQ    #3,D1               ; We added 4 bytes, aka 4 spaces
+            
+            MOVE.L  D5,D6               ; Copy D5 into D6
+            ANDI.L  #$00FF,D6           ; Isolate the Src EA bits
+            
+            MOVE.B  #'#',(A1)+
+            ADDQ    #1,D1               ; We added 4 bytes, aka 4 spaces
+            ; THIS SECTION NEEDS TO POINT TO IMMEDIATE DATA EA, of size Word if it makes a difference
+            
+            MOVE.B  #',',(A1)+
+            ADDQ    #1,D1
+            
+            MOVE.L  D5,D6               ; Copy D5 into D6
+            ROR.L   #8,D6               ; Rotate 9 bits to the right (Dn Dst bits)
+            ROR.L   #1,D6               ; Rotate 9 bits to the right (Dn Dst bits)
+            ANDI.L  #$0003,D6           ; Isolate the Dn Destination bits
+            JMP EADN
+            
             RTS 
             
-DIVU        *(Implement)
+DIVU 
             MOVE.L  #'DIVU',(A1)+
             ADDQ    #4,D1               ; We added 4 new characters to our IOStringLoc
             
