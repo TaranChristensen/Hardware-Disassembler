@@ -33,8 +33,8 @@ EAGETSRCEA
     CMP.B   #4,D7       ; See if the mode == '100'
     BEQ     EAAPRE      ; Address Register Indirect with Pre increment
     
-*    CMP.B   #7,D7       ; See if the mode == '111' 
-*    BEQ     EA111       ; Determine if (Immediate Data, Aboslute Word or Long Address)
+    CMP.B   #7,D7       ; See if the mode == '111' 
+    BEQ     EA111       ; Determine if (Immediate Data, Aboslute Word or Long Address)
 
     BRA     EAUNKN
 
@@ -58,8 +58,8 @@ EAGETDSTEA
     CMP.B   #4,D7       ; See if the mode == '100'
     BEQ     EAAPRE      ; Address Register Indirect with Pre increment
     
-*    CMP.B   #7,D7       ; See if the mode == '111' 
-*    BEQ     EA111       ; Determine if (Immediate Data, Aboslute Word or Long Address)
+    CMP.B   #7,D7       ; See if the mode == '111' 
+    BEQ     EA111       ; Determine if (Immediate Data, Aboslute Word or Long Address)
 
     BRA     EAUNKN
          
@@ -112,40 +112,73 @@ EAAPRE
     MOVE.B  #')',(A1)+
     ADDQ    #5,D1
     RTS 
-*;If the EA is a #<data> EA    
-*;This method assume D6 contains the Reg for #<data>  
-*EAID
-*    MOVE.B  #'',(A1)+
-*    ADD.B   #48,D6      ; Add 48 into D6 to turn num 0 into ASCII 0
-*    MOVE.B  D6,(A1)+
-*    ADDQ    #2,D1
-*    RTS
-*;If the EA is a (xxx).W EA    
-*;This method assume D6 contains the Reg for (xxx).W  
-*EAAWA
-*    MOVE.B  #'',(A1)+
-*    ADD.B   #48,D6      ; Add 48 into D6 to turn num 0 into ASCII 0
-*    MOVE.B  D6,(A1)+
-*    ADDQ    #2,D1
-*    RTS
-*;If the EA is a (xxx).L EA    
-*;This method assume D6 contains the Reg for (xxx).L  
-*EAALA
-*    MOVE.B  #'',(A1)+
-*    ADD.B   #48,D6      ; Add 48 into D6 to turn num 0 into ASCII 0
-*    MOVE.B  D6,(A1)+
-*    ADDQ    #2,D1
-*    RTS
-*;If the EA Mode = 111, Determine EA    
-*;This method assume D6 contains the Reg for EA  
-*EA111
-*    CMP.B #0,D6
-*    BEQ     EAAWA       ; Absolute Word Address 
-*    CMP.B #1,D6
-*    BEQ     EAALA       ; Absolute Long Address 
-*    CMP.B #4,D6
-*    BEQ     EAID        ; Immediate Data 
-*    *-----------------------------------------------let fall through? it shouldn't RTS right?
+;If the EA is a #<data> EA    
+;This method assume D6 contains the Reg for #<data>  
+EAID
+    MOVE.B  #' ',(A1)+
+    ADD.B   #48,D6      ; Add 48 into D6 to turn num 0 into ASCII 0
+    MOVE.B  D6,(A1)+
+    ADDQ    #2,D1
+    RTS
+;If the EA is a (xxx).W EA    
+;This method assume D6 contains the Reg for (xxx).W  
+EAAWA
+    MOVE.B  #'$',(A1)+
+    ADDQ    #1,D1
+    MOVE.W  (A2)+,D6   ; Push our next Word value into D6
+    ; Push the ASCII equivlent characters of D6-- only the
+    ;   first Word's worth (our entire Word we just acquired)
+    CLR     D4
+    JSR     EAHEXtoASCII
+    
+    RTS
+;If the EA is a (xxx).L EA    
+;This method assume D6 contains the Reg for (xxx).L  
+EAALA
+    MOVE.B  #'$',(A1)+
+    ADDQ    #1,D1
+    MOVE.L  (A2)+,D6   ; Push our next Long value into D6
+    ; Push the ASCII equivlent characters of D6-- only the
+    ;   first Word's worth of our Long
+    CLR     D4         ; Clear our counter
+    SWAP    D6         ; Flip the high-order Word with the Low-order
+    JSR     EAHEXtoASCII
+    SWAP    D6         ; Flip the high-order Word with the Low-order
+    ; Print the second half of the Long, too
+    CLR     D4
+    JSR     EAHEXtoASCII
+    
+    RTS
+;If the EA Mode = 111, Determine EA    
+;This method assume D6 contains the Reg for EA  
+EA111
+    CMP.B #0,D6
+    BEQ     EAAWA       ; Absolute Word Address 
+    CMP.B #1,D6
+    BEQ     EAALA       ; Absolute Long Address 
+    CMP.B #4,D6
+    BEQ     EAID        ; Immediate Data 
+    *-----------------------------------------------let fall through? it shouldn't RTS right?
+    BRA     EAUNKN
+    
+; Uses D6 as a storage, D3 as a go-between, and D4 as a counter..
+;  This operates on the low-order word of D2, and pushes exactly 4 
+;  characters into IOStringLoc, converted from HEX of D2's nybble,
+;  to ASCII in IOStringLoc
+EAHEXtoASCII    ADDQ    #1,D4
+                ROL.W   #4,D6              Get the left-most nyblle to the front..
+                MOVE.B  D6,D3              .. Put the front-most byte into D3    
+                AND.B   #$0F,D3            Distill D3 down to the original left-most nybble
+                CMP.B   #9,D3              See if our number is greater than 9..
+                BLE     EADIGIT            If it is 9 or less, it's a digit..
+                ADD.B   #7,D3              Otherwise it is a digit, and needs an additional 7
+EADIGIT         ADD.B   #48,D3             We now have the nybble's ASCII code
+                MOVE.B  D3,(A1)+           Move the ASCII code into the output string at A1
+                CMP.B   #4,D4              See if we've read all the characters
+                BNE.S   EAHEXtoASCII       Continue if we haven't
+                
+                ADDQ    #4,D1
+                RTS
     
 ; MOVEM's (A7)+,A0-A6,D0-D7 format
 ; Gets the follow-up WORD in order to process it
@@ -363,7 +396,6 @@ DNENLE
 ENDEAMOVEMPD
     RTS
 
-
 ; If the EA is unknown
 EAUNKN
     MOVE.B  #'<',(A1)+  ; We did this byte-by-byte in case A1 is at an odd register
@@ -374,6 +406,7 @@ EAUNKN
     RTS
 
 * Put variables and constants here
+
 
 
 
