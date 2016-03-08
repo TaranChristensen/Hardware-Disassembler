@@ -15,7 +15,7 @@ OPGETCODE   MOVE.W  (A2)+,D5    ; Push our OpCode into D5
             ROR.L   #4,D6       ; 
             ANDI.B  #$0F,D6     ; Isolate our opcode nybble
             CMP.B   #$00,D6
-            BEQ     ADDI        ; ADDI (Worked on)
+            BEQ     ADDI        ; ADDI 
             CMP.B   #$01,D6     
             BEQ     MOVEB       ; MOVE.B
             CMP.B   #$03,D6     
@@ -23,23 +23,23 @@ OPGETCODE   MOVE.W  (A2)+,D5    ; Push our OpCode into D5
             CMP.B   #$02,D6
             BEQ     MOVEL       ; MOVE.L
             CMP.B   #$04,D6
-            BEQ     CNRJML      ; CLR or NOP or RTS or JSR or MOVEM or LEA (Implement)(Working on NOP,RTS,CLR)
+            BEQ     CNRJML      ; CLR or NOP or RTS or JSR or MOVEM or LEA
             CMP.B   #$06,D6
             BEQ     Bcc         ; Bcc (BCC, BGT, BLE) (Implement)
             CMP.B   #$07,D6
-            BEQ     MOVEQ       ; MOVEQ (Implement)
+            BEQ     MOVEQ       ; MOVEQ (Work in progress)
             CMP.B   #$08,D6
             BEQ     DIVU        ; DIVU
             CMP.B   #$09,D6
             BEQ     SUB         ; SUB
             CMP.B   #$0B,D6
-            BEQ     CMP         ; CMP (Implement)
+            BEQ     CMP         ; CMP (Work in progress)
             CMP.B   #$0C,D6
             BEQ     MULSAND     ; MULS or AND opcodes
             CMP.B   #$0D,D6
             BEQ     ADDADDA     ; ADD or ADDA
             CMP.B   #$0E,D6 
-            BEQ     ASLSRO      ; ASd (ASR) or LSd (LSL) or ROd (ROL) (Implement)
+            BEQ     ASLSRO      ; ASd (ASR) or LSd (LSL) or ROd (ROL)
             BRA     UNKNOWN  
    
 ADDI                                    ; Confirmed first left-most 4 bits of ADDI
@@ -152,16 +152,16 @@ CNRJML
             BNE     JSR                ; If this one is set, branch to JSR
             
             BRA     MOVEM
-                                       ; LEA's middle most left nybble is unique (xxx1)
+                                       ; LEA's middle most left nybble is unique (---1)
             BTST    #1,D6              ; Check the right most bit's value
             BEQ     LEA                ; If equals 1, branch
                
-                                       ; MOVEM's middle most left nybble is unique (1x00)
+                                       ; MOVEM's middle most left nybble is unique (1-00)
             ROR.L   #1,D6              ; first bit must be 0, rotate 1 bit 
             BTST    #0,D6               ; Compare again for 00 match
             BEQ     MOVEM                           
                                        
-            MOVE.L  D5,D6              ; Push D5 into D6; JSR's middle nybbles are unique (1110 10xx)
+            MOVE.L  D5,D6              ; Push D5 into D6; JSR's middle nybbles are unique (1110 10--)
             ROR.L   #6,D6              ; Rotate 6 bits
             ANDI.L  #$00FF,D6          ; Isolate the 8 known bits (00 1110 10)
             CMP.L   #$003A,D6          ; Compare
@@ -238,7 +238,7 @@ JSR         *(Implement)
             RTS
             
 
-;  Here we assume that these left-most have been confirmed, where - have not been confirmed: 0100 --00
+;  Here we assume that these left-most bits have been confirmed, where - have not been confirmed: 0100 --00
 MOVEM       *(Implement)
             MOVE.L  #'MOVE',(A1)+
             MOVE.W  #'M.',(A1)+
@@ -294,7 +294,7 @@ MOVEMPOSTI  MOVE.L  D5,D6              ; Copy our OpCode to D6
             RTS
             
 
-;  Here we assume that these left-most have been confirmed, where - have not been confirmed: 0100 ---1            
+;  Here we assume that these left-most bits have been confirmed, where - have not been confirmed: 0100 ---1            
 LEA
             MOVE.W  #'LE',(A1)+
             MOVE.B  #'A',(A1)+
@@ -428,11 +428,60 @@ SUBBDN      MOVE.L  #'SUB.',(A1)+
             ADDQ    #1,D1               ; We added 1 byte into D1
             BRA ANDDN  
 
+;  Here we assume that these left-most nybble has been confirmed: 1011  
+CMP        
+            MOVE.L  D5,D6               ; Push D5 into D6
+            ROR.L   #6,D6               ; Rotate 6 bits to the right
+            LSL.L   #1,D6               ; Add 0 to right most bit
+            ANDI.B  #$0F,D6             ; Isolate right-most nybble
+            
+            CMP.B   #$00,D6             ; If it matches CMP.B's size bit + 0 added to right
+            BEQ     CMPB                ; First 4 left-most bits plus size of CMP confirmed
 
-CMP         *(Implement)
-                 
-            RTS         
-       
+            CMP.B   #$02,D6             ; If it matches CMP.W's size bit + 0 added to right
+            BEQ     CMPW                ; First 4 left-most bits plus size of CMP confirmed 
+
+            CMP.B   #$04,D6             ; If it matches CMP.B's size bit + 0 added to right
+            BEQ     CMPL                ; First 4 left-most bits plus size of CMP confirmed 
+ 
+            BRA     UNKNOWN             ; else unknown 
+
+;  Here we assume that confirming these bits, 1011 --- 000 --- ---, is enough to identify CMP.B 
+CMPB        MOVE.L  #'CMP',(A1)+
+            MOVE.W  #'.B',(A1)+
+            ADDQ    #5,D1              ; We added 5 new characters to our IOStringLoc 
+            BRA CMPOP
+
+;  Here we assume that confirming these bits, 1011 --- 001 --- ---, is enough to identify CMP.W   
+CMPW        MOVE.L  #'CMP',(A1)+
+            MOVE.W  #'.W',(A1)+
+            ADDQ    #5,D1              ; We added 5 new characters to our IOStringLoc 
+            BRA CMPOP
+            
+;  Here we assume that confirming these bits, 1011 --- 010 --- ---, is enough to identify CMP.L
+CMPL        MOVE.L  #'CMP',(A1)+
+            MOVE.W  #'.L',(A1)+
+            ADDQ    #5,D1              ; We added 5 new characters to our IOStringLoc 
+            BRA CMPOP
+            
+CMPOP       MOVE.L  #'    ',(A1)+       ; Add a spacer into our IOStringLoc
+            ADDQ    #4,D1               ; We added 4 bytes, aka 4 spaces
+            
+            MOVE.L  D5,D6               ; Push D5 into D6
+            ANDI.L  #$003F,D6           ; Isolate the Src EA bits 
+            JSR EAGETSRCEA              ; Find and print the code stored in D6
+            
+            MOVE.B  #',',(A1)+
+            ADDQ    #1,D1
+            
+            MOVE.L  D5,D6               ; Copy D5 into D6
+            ROR.L   #8,D6               ; Rotate 9 bits to the right (Dn Dst bits)
+            ROR.L   #1,D6               ; Rotate 9 bits to the right (Dn Dst bits)
+            ANDI.L  #$0003,D6           ; Isolate the Dn Destination bits
+            JMP EADN
+            
+            RTS          
+        
 ; This label determines if the code is either MULS or AND, by looking at it's size bits     
 MULSAND     MOVE.L  D5,D6               ; Copy D5 into D6
             LSR.L   #6,D6               ; Shift the size bits to the far right
@@ -822,6 +871,7 @@ UNKNOWN
         
             RTS
 * Put variables and constants here
+
 
 
 
