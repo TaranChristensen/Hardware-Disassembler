@@ -630,8 +630,114 @@ ADDAN
             JSR EAAN
                  
 ; This label determines if the code is either ASd (ASR) or LSd (LSL) or ROd (ROL) 
-ASLSRO      *(Implement)
-                 
+ASLSRO
+            MOVE.L  D5,D6               ; Copy our OpCode
+            LSR.W   #6,D6               ; Shift our size bits into place
+            ANDI.B  #$03,D6             ; Isolate our size bits
+            CMP.B   #%11,D6             ; If our size is '11'..
+            BEQ     AASLSRO             ; ..this is an address ASLSRO
+            
+            MOVE.L  D5,D6               ; Copy our OpCode
+            LSR.W   #3,D6               ; Shift our identification bits over
+            ANDI.B  #03,D6              ;  and isolate them
+            
+            CMP.B   #%00,D6             ; If '00', this is a ASd op
+            BEQ     ASD
+            CMP.B   #%01,D6             ; If '01', this is a LSd op
+            BEQ     LSD
+            CMP.B   #%11,D6             ; If '11', this is a ROd op
+            BEQ     ROD
+            
+            BRA     UNKNOWN             ; This catches for ROX, non-required op
+
+ASD         MOVE.W  #'AS',(A1)+
+            ADDQ    #2,D1
+            BRA     ASLSRODR
+            
+LSD         MOVE.W  #'LS',(A1)+
+            ADDQ    #2,D1
+            BRA     ASLSRODR
+            
+ROD         MOVE.W  #'RO',(A1)+
+            ADDQ    #2,D1
+            BRA     ASLSRODR
+            
+; This section checks our ASd/LSd/ROd direction, and defaults to Right 
+ASLSRODR    MOVE.L  D5,D6               ; Copy our OpCode
+            ROR.L   #8,D6               ; Shift our direction bit into place
+            BTST    #$00,D6             ; Check our right-most bit 
+            BEQ     ASLSRODL            ; If it's '1', our direction is left
+            
+            MOVE.B  #'R',(A1)+          ; Otherwise it's right
+            MOVE.B  #'.',(A1)+
+            ADDQ    #2,D1
+            
+            BRA ASLSROSIZE
+            
+; This section is our ASd/LSd/ROd left direction
+ASLSRODL    MOVE.B  #'L',(A1)+          ; L for Left
+            MOVE.B  #'.',(A1)+
+            ADDQ    #2,D1
+            ; Carry into our Size determiner
+; Determines what size our ASd/LSd/ROd is
+;  Our previous operations on D6 leave our size bits
+;  just our of range, so we shift them in
+ASLSROSIZE  
+            ROL.L   #2,D6               ; Shift our size bits in
+            ANDI.B  #$03,D6             ; Isolate our size bits
+            CMP.B   #%00,D6             ; If our size is '00'..
+            BEQ     ASLSROB             ; ..Then it's a byte op
+            CMP.B   #%01,D6             ; If our size is '01'..
+            BEQ     ASLSROW             ; ..Then it's a word op
+            ; Otherwise it's a long op, because we accounted for '11' earlier
+            
+            MOVE.B  #'L',(A1)+          ; Add L for Long
+            BRA     ASLSROIR            ; Complete the rest of the ASLSRO Op
+            
+ASLSROB     MOVE.B  #'B',(A1)+          ; Add B for Byte
+            BRA     ASLSROIR            ; Complete the rest of the ASLSRO Op
+            
+ASLSROW     MOVE.B  #'W',(A1)+          ; Add W for Word
+            ; Carry through to complete the rest of the ASLSRO Op  
+     
+; This section determines if our ASLSRO is an Immediate or Dn shfit, and defaults to Immediate
+ASLSROIR    MOVE.B  #' ',(A1)+
+            MOVE.W  #'  ',(A1)+
+            MOVE.B  #' ',(A1)+
+            ADDQ    #5,D1               ; We've added 5 new characters (Size char, plus spaces)
+            
+            ;MOVE.L  D5,D6
+            ROL.L   #1,D6               ; Get our Immediate / Register bit out front
+            BTST.L  #$00,D6
+            BNE     ASLSROIRDN          ; If it's '1', we have a Dn ASLSRO
+            ; Otherwise, assume immediate ASLSRO
+            MOVE.B  #'#',(A1)+
+            ADDQ    #1,D1
+            BRA     ASLSROOP            ; Branch to our ASLSRO Op finish
+; An ASLSRO of Dn Register type   
+ASLSROIRDN  MOVE.B  #'D',(A1)+
+            ADDQ    #1,D1
+            ; Continue through to our ASLSRO Op finish
+; Finishes the ASLSRO Op
+ASLSROOP
+            MOVE.L  D5,D6               ; Copy our OpCode into D6
+            ROR.L   #8,D6               ; Shift our Count/Reg bits into place
+            ROR.L   #1,D6               ;
+            ANDI.B  #$07,D6             ; Isolate the Count/Reg bits
+            
+            ADDI.B  #48,D6 
+            MOVE.B  D6,(A1)+            ; Push our number to the IOStringLoc
+            ADDQ    #1,D1
+            
+            MOVE.B  #',',(A1)+
+            ADDQ    #1,D1
+            
+            MOVE.L  D5,D6               ; Isolate our Dn affected num bits
+            ANDI.L  #$07,D6             ;
+            JSR     EADN
+            
+            RTS
+AASLSRO
             RTS
 UNKNOWN
             MOVE.L  #'????',(A1)+
