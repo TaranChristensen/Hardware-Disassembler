@@ -29,7 +29,7 @@ OPGETCODE   MOVE.W  (A2)+,D5    ; Push our OpCode into D5
             CMP.B   #$07,D6
             BEQ     MOVEQ       ; MOVEQ (Implement)
             CMP.B   #$08,D6
-            BEQ     DIVU        ; DIVU (Implement)
+            BEQ     DIVU        ; DIVU
             CMP.B   #$09,D6
             BEQ     SUB         ; SUB
             CMP.B   #$0B,D6
@@ -276,10 +276,27 @@ MOVEMPOSTI  MOVE.L  D5,D6              ; Copy our OpCode to D6
             
 
 ;  Here we assume that these left-most have been confirmed, where - have not been confirmed: 0100 ---1            
-LEA         *(Implement)
+LEA
             MOVE.W  #'LE',(A1)+
             MOVE.B  #'A',(A1)+
             ADDQ    #3,D1              ; We added 3 new characters to our IOStringLoc 
+             
+            MOVE.B  #' ',(A1)+          ; Added an extra space here, due to only 3 character OpCode
+            MOVE.L  #'    ',(A1)+       ; Add a spacer into our IOStringLoc
+            ADDQ    #5,D1               ; We added 4 bytes, aka 4 spaces
+            
+            MOVE.L  D5,D6               ; Copy D5 into D6
+            ANDI.L  #$003F,D6           ; Isolate the Src EA bits
+            JSR EAGETSRCEA
+            
+            MOVE.B  #',',(A1)+
+            ADDQ    #1,D1
+            
+            MOVE.L  D5,D6               ; Copy D5 into D6
+            ROR.L   #8,D6               ; Rotate 9 bits to the right (An Dst bits)
+            ROR.L   #1,D6               ; 
+            ANDI.L  #$0003,D6           ; Isolate the An Destination bits
+            JMP EAAN
             RTS      
             
 Bcc         *(Implement)
