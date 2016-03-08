@@ -31,7 +31,7 @@ OPGETCODE   MOVE.W  (A2)+,D5    ; Push our OpCode into D5
             CMP.B   #$08,D6
             BEQ     DIVU        ; DIVU (Implement)
             CMP.B   #$09,D6
-            BEQ     SUB         ; SUB (Implement)
+            BEQ     SUB         ; SUB
             CMP.B   #$0B,D6
             BEQ     CMP         ; CMP (Implement)
             CMP.B   #$0C,D6
@@ -291,11 +291,29 @@ MOVEQ       *(Implement)
             RTS 
             
 DIVU        *(Implement)
-                 
-            RTS
+            MOVE.L  #'DIVU',(A1)+
+            ADDQ    #4,D1               ; We added 4 new characters to our IOStringLoc
             
-SUB         *(Implement)
+            MOVE.L  #'    ',(A1)+       ; Add a spacer into our IOStringLoc
+            ADDQ    #4,D1               ; We added 4 bytes, aka 4 spaces
+            
             MOVE.L  D5,D6               ; Copy D5 into D6
+            ANDI.L  #$003F,D6           ; Isolate the Src EA bits
+            JSR EAGETSRCEA
+            
+            MOVE.B  #',',(A1)+
+            ADDQ    #1,D1
+            
+            MOVE.L  D5,D6               ; Copy D5 into D6
+            ROR.L   #8,D6               ; Rotate 9 bits to the right (Dn Dst bits)
+            ROR.L   #1,D6               ; Rotate 9 bits to the right (Dn Dst bits)
+            ANDI.L  #$0003,D6           ; Isolate the Dn Destination bits
+            JMP EADN
+            
+            RTS
+
+            
+SUB         MOVE.L  D5,D6               ; Copy D5 into D6
             LSR.L   #6,D6               ; Shift the size bits to the far right
             ANDI.B  #$7,D6              ; Isolate the size bits    
                  
