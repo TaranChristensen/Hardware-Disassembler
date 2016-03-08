@@ -737,7 +737,60 @@ ASLSROOP
             JSR     EADN
             
             RTS
-AASLSRO
+; Start of the Effective Address version of ASLSRO
+AASLSRO     MOVE.L  D5,D6               ; Copy our OpCode into D6
+            ROL.W   #7,D6               ; Shift our determination bits to the far right
+            ANDI.B  #$07,D6             ; Isolate the determination bits   
+            
+            CMP.B   #$01,D6             ; If our determination is '001'..
+            BEQ     ALSD                ; It's a Logical Shift
+            CMP.B   #$03,D6             ; If it's '011'
+            BEQ     AROD                ; It's a Rotation 
+            CMP.B   #$00,D6             ; If it's '000'
+            BEQ     AASD                ; It's an Arithmetic Shift
+            
+            BRA     UNKNOWN              ; Otherwise it's data
+
+AASD        MOVE.W  #'AS',(A1)+
+            ADDQ    #2,D1
+            BRA     AASLSRODR
+            
+ALSD        MOVE.W  #'LS',(A1)+
+            ADDQ    #2,D1
+            BRA     AASLSRODR
+            
+AROD        MOVE.W  #'RO',(A1)+
+            ADDQ    #2,D1
+            BRA     AASLSRODR
+            
+; This section checks our ASd/LSd/ROd direction, and defaults to Right 
+AASLSRODR   MOVE.L  D5,D6              ; Copy our OpCode
+            ROR.L   #8,D6               ; Shift our direction bit into place
+            BTST    #$00,D6             ; Check our right-most bit 
+            BEQ     AASLSRODL           ; If it's '1', our direction is left
+            
+            MOVE.B  #'R',(A1)+          ; Otherwise it's right
+            ADDQ    #1,D1
+            
+            BRA AASLSROOP
+            
+; This section is our ASd/LSd/ROd left direction
+AASLSRODL   MOVE.B  #'L',(A1)+          ; L for Left
+            ADDQ    #1,D1
+            ; Carry into finishing AASLSRO op
+
+; This section finishes off our Effective Address ASLSRO Op
+AASLSROOP   MOVE.L  D5,D6               ; Copy our OpCode
+            ANDI.L  #$3F,D6             ; Isolate our EA bits
+            
+            MOVE.B  #' ',(A1)+
+            MOVE.B  #' ',(A1)+
+            MOVE.B  #' ',(A1)+
+            MOVE.B  #' ',(A1)+
+            ADDQ    #4,D1
+            
+            JSR EAGETSRCEA
+            
             RTS
 UNKNOWN
             MOVE.L  #'????',(A1)+
