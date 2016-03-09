@@ -4,12 +4,15 @@
 * Date       : ##/##/16
 * Description: Input Output File
 *-----------------------------------------------------------
-
+                LEA     COUNTER,A3
+                MOVE.L  #0,(A3)
 *-------Code for output-------
-IOINTRO         ADD.L   #$00000001,COUNTER
+IOINTRO         ADD.L   #$00000001,(A3)
                 LEA     IntroMsg,A1        Display the intro
                 MOVE.B  #14, D0
                 TRAP    #15
+                CMP.L   #$00000004,(A3)
+                BNE     IOINTRO
 
 IOLOOP          LEA     HexStart,A1        Display the prompt and loop it
                 MOVE.B  #14,D0          
@@ -79,7 +82,7 @@ TEST_ODD        CLR.L   D6
                 BEQ     BAD_EVEN           branch to to even
                 CLR.L   D6
                 CLR.L   D5
-                BRA     OUTPUTOPCODE       was even so keep going
+                RTS
                 
                 
 BAD_EVEN        CLR.L   D5
@@ -105,9 +108,10 @@ IOORTAG         OR.B    D3,D2              Store our nybble into D2
                 MOVE.L  #0,StartAddress
                 MOVE.L  D2,StartAddress    Store our StartAddress
                 
-                ;BRA     TEST_ODD          ******************** need test_odd to not always branch to outputopcode **************************
+                JSR     TEST_ODD          ******************** need test_odd to not always branch to outputopcode **************************
                 
                 CLR.L   D1
+                CLR.L   D2
 ************************ Ending Address ************************
                 ;The Labels of this section are the same as the previous (different names)
                 ;due to errors that I was getting with bracnhing and overwriting 
@@ -147,7 +151,7 @@ IOORTAG2        OR.B    D3,D2              Store our nybble into D2
                 MOVE.L  #0,EndingAddress
                 MOVE.L  D2,EndingAddress   Store our EndingAddress
                 
-                ;BRA     TEST_ODD
+                JSR     TEST_ODD
                 
                 CLR.L   D1
         
@@ -248,10 +252,14 @@ OUTRO           DC.B    'Goodbye !',0                            Outro message
 FAIL_INPUT      DC.B    'I am sorry, but you typed an address that did not meet the criteria',CR,LF,0 
 StartAddress    DS.L    1
 EndingAddress   DS.L    1
-COUNTER         DS.L    0 keep track of the lines on the screen
+COUNTER         DS.L    1 keep track of the lines on the screen
 ENTERPROMPT     DC.B    'The screen limit has been reached, please press enter to continue',CR,LF,0
 
 * Put variables and constants herevv
+
+
+
+
 
 
 
