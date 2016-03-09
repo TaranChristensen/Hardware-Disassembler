@@ -25,15 +25,15 @@ OPGETCODE   MOVE.W  (A2)+,D5    ; Push our OpCode into D5
             CMP.B   #$04,D6
             BEQ     CNRJML      ; CLR or NOP or RTS or JSR or MOVEM or LEA
             CMP.B   #$06,D6
-            BEQ     Bcc         ; Bcc (BCC, BGT, BLE) (Implement)
+            BEQ     Bcc         ; Bcc (BCC, BGT, BLE) 
             CMP.B   #$07,D6
-            BEQ     MOVEQ       ; MOVEQ (Work in progress)
+            BEQ     MOVEQ       ; MOVEQ 
             CMP.B   #$08,D6
             BEQ     DIVU        ; DIVU
             CMP.B   #$09,D6
             BEQ     SUB         ; SUB
             CMP.B   #$0B,D6
-            BEQ     CMP         ; CMP (Work in progress)
+            BEQ     CMP         ; CMP 
             CMP.B   #$0C,D6
             BEQ     MULSAND     ; MULS or AND opcodes
             CMP.B   #$0D,D6
@@ -239,15 +239,24 @@ RTS
             
 
 ;  Here we assume the first left-most 10 bits have been confirmed: 0100 1110 10 
-JSR         *(Implement)
+JSR         
             MOVE.W  #'JS',(A1)+
             MOVE.B  #'R',(A1)+
             ADDQ    #3,D1              ; We added 3 new characters to our IOStringLoc 
+            
+            MOVE.B  #' ',(A1)+
+            MOVE.W  #'  ',(A1)+      ; Add a spacer into our IOStringLoc
+            MOVE.B  #' ',(A1)+
+            ADDQ    #4,D1              ; We added 4 bytes, aka 4 spaces
+            MOVE.L  D5,D6              ; Push D5 into D6
+            
+            ANDI.L  #$003F,D6          ; Isolate the Src EA bits 
+            JSR EAGETSRCEA             ; Find and print the code stored in D6 
             RTS
             
 
 ;  Here we assume that these left-most bits have been confirmed, where - have not been confirmed: 0100 --00
-MOVEM       *(Implement)
+MOVEM       
             MOVE.L  #'MOVE',(A1)+
             MOVE.W  #'M.',(A1)+
             ADDQ    #6,D1              ; We added 6 new characters to our IOStringLoc 
@@ -455,25 +464,33 @@ CMP
             BRA     UNKNOWN             ; else unknown 
 
 ;  Here we assume that confirming these bits, 1011 --- 000 --- ---, is enough to identify CMP.B 
-CMPB        MOVE.L  #'CMP',(A1)+
-            MOVE.W  #'.B',(A1)+
+CMPB        MOVE.W  #'CM',(A1)+
+            MOVE.B  #'P',(A1)+
+            MOVE.B  #'.',(A1)+
+            MOVE.B  #'B',(A1)+
             ADDQ    #5,D1              ; We added 5 new characters to our IOStringLoc 
-            BRA CMPOP
+            BRA     CMPOP
 
 ;  Here we assume that confirming these bits, 1011 --- 001 --- ---, is enough to identify CMP.W   
-CMPW        MOVE.L  #'CMP',(A1)+
-            MOVE.W  #'.W',(A1)+
+CMPW        MOVE.W  #'CM',(A1)+
+            MOVE.B  #'P',(A1)+
+            MOVE.B  #'.',(A1)+
+            MOVE.B  #'W',(A1)+
             ADDQ    #5,D1              ; We added 5 new characters to our IOStringLoc 
-            BRA CMPOP
+            BRA     CMPOP
             
 ;  Here we assume that confirming these bits, 1011 --- 010 --- ---, is enough to identify CMP.L
-CMPL        MOVE.L  #'CMP',(A1)+
-            MOVE.W  #'.L',(A1)+
+CMPL        MOVE.W  #'CM',(A1)+
+            MOVE.B  #'P',(A1)+
+            MOVE.B  #'.',(A1)+
+            MOVE.B  #'L',(A1)+
             ADDQ    #5,D1              ; We added 5 new characters to our IOStringLoc 
-            BRA CMPOP
+            BRA     CMPOP
             
-CMPOP       MOVE.L  #'    ',(A1)+       ; Add a spacer into our IOStringLoc
-            ADDQ    #4,D1               ; We added 4 bytes, aka 4 spaces
+CMPOP       MOVE.B  #' ',(A1)+
+            MOVE.W  #'  ',(A1)+      ; Add a spacer into our IOStringLoc
+            MOVE.B  #' ',(A1)+
+            ADDQ    #4,D1              ; We added 4 bytes, aka 4 spaces
             
             MOVE.L  D5,D6               ; Push D5 into D6
             ANDI.L  #$003F,D6           ; Isolate the Src EA bits 
@@ -879,6 +896,7 @@ UNKNOWN
         
             RTS
 * Put variables and constants here
+
 
 
 
