@@ -41,18 +41,29 @@ OPGETCODE   MOVE.W  (A2)+,D5    ; Push our OpCode into D5
             CMP.B   #$0E,D6 
             BEQ     ASLSRO      ; ASd (ASR) or LSd (LSL) or ROd (ROL)
             BRA     UNKNOWN  
-   
-ADDI                                    ; Confirmed first left-most 4 bits of ADDI
-            MOVE.L  D5,D6               ; Push D5 into D6
+            
+;  Here we assume the first left-most 4 bits have been confirmed: 0000
+ADDI        MOVE.L  D5,D6               ; Push D5 into D6
             ROR.L   #8,D6               ; Rotate left-most middle nybble to the right-most nybble
             ANDI.B  #$0F,D6             ; Isolate opcode nybble
             CMP.B   #$06,D6             ; If it matches ADDI's left-most middle nybble, branch
             BEQ     ADDI8               ; First 8 left-most bits of ADDI confirmed 
             BRA     UNKNOWN             ; else unknown                       
-            
-ADDI8                                   ; Confirmed first left-most 8 bits of ADDI: 0000 0110
 
-            MOVE.L  D5,D6              ; Push D5 into D6 (Copy OPcode over isolated nybble)
+;  Here we assume the first left-most 8 bits have been confirmed: 0000 0110            
+ADDI8                                  ; Two consecutive tests for illegal Src Modes
+            MOVE.L  D5,D6              ; Push D5 into D6 
+            ANDI.L  #$003F,D6          ; Isolate the Src EA bits
+            CMP.L   #$003C, D6         ; Compare with illegal mode #<data>
+            BEQ     UNKNOWN
+            
+            ROR.L   #3,D6              ; Roll 3 bits right
+            ANDI.L  #$0007,D6          ; Isolate the 3 Src Mode bits
+            CMP.L   #$0001, D6         ; Compare with illegal mode An
+            BEQ     UNKNOWN
+            
+                                
+            MOVE.L  D5,D6              ; Push D5 into D6 
             LSR.L   #6,D6              ; Shift six bits to the right
             ANDI.L  #$0003,D6          ; Isolate the size bits
                        
@@ -896,6 +907,8 @@ UNKNOWN
         
             RTS
 * Put variables and constants here
+
+
 
 
 
