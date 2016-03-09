@@ -185,22 +185,30 @@ CLR
             
             BRA     UNKNOWN            ; If it isn't any, then it's Unknown
             
-CLRB        MOVE.L  #'CLR',(A1)+
-            MOVE.W  #'.B',(A1)+
+CLRB        MOVE.W  #'CL',(A1)+
+            MOVE.B  #'R',(A1)+
+            MOVE.B  #'.',(A1)+
+            MOVE.B  #'B',(A1)+
             ADDQ    #5,D1              ; We added 5 new characters to our IOStringLoc 
             BRA     CLROP
             
-CLRW        MOVE.L  #'CLR',(A1)+
-            MOVE.W  #'.W',(A1)+
+CLRW        MOVE.W  #'CL',(A1)+
+            MOVE.B  #'R',(A1)+
+            MOVE.B  #'.',(A1)+
+            MOVE.B  #'W',(A1)+
             ADDQ    #5,D1              ; We added 5 new characters to our IOStringLoc 
             BRA     CLROP
 
-CLRL        MOVE.L  #'CLR',(A1)+
-            MOVE.W  #'.L',(A1)+
+CLRL        MOVE.W  #'CL',(A1)+
+            MOVE.B  #'R',(A1)+
+            MOVE.B  #'.',(A1)+
+            MOVE.B  #'L',(A1)+
             ADDQ    #5,D1              ; We added 5 new characters to our IOStringLoc 
             BRA     CLROP
             
-CLROP       MOVE.L  #'    ',(A1)+      ; Add a spacer into our IOStringLoc
+CLROP       MOVE.B  #' ',(A1)+
+            MOVE.W  #'  ',(A1)+      ; Add a spacer into our IOStringLoc
+            MOVE.B  #' ',(A1)+
             ADDQ    #4,D1              ; We added 4 bytes, aka 4 spaces
             
             MOVE.L  D5,D6              ; Push D5 into D6
@@ -871,6 +879,7 @@ UNKNOWN
         
             RTS
 * Put variables and constants here
+
 
 
 
