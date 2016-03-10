@@ -1,6 +1,6 @@
 00008000 Starting Address
 Assembler used: EASy68K Editor/Assembler v5.15.04
-Created On: 3/9/2016 10:07:39 PM
+Created On: 3/9/2016 10:33:55 PM
 
 00000000                             1  *-----------------------------------------------------------
 00000000                             2  * Title      : Test
@@ -10,12 +10,12 @@ Created On: 3/9/2016 10:07:39 PM
 00000000                             6  *-----------------------------------------------------------
 00008000                             7  STARTTEST: ORG    $8000
 00008000                             8  
-00008000  4E71                       9      NOP
+00008000  4E71                       9  NOP NOP
 00008002  1200                      10      MOVE.B  D0,D1
 00008004  123C 00AB                 11      MOVE.B  #$AB,D1
 00008008  323C ABCD                 12      MOVE.W  #$ABCD,D1
 0000800C                            13      ;MOVE.L  #$ABCDEF01,D1
-0000800C  3612                      14      MOVE.W  (A2),D3
+0000800C  3612                      14  MOP MOVE.W  (A2),D3
 0000800E  2A1C                      15      MOVE.L  (A4)+,D5
 00008010  7E06                      16      MOVEQ   #6,D7
 00008012  7C07                      17      MOVEQ   #7,D6
@@ -28,7 +28,7 @@ Created On: 3/9/2016 10:07:39 PM
 0000801A                            24      ;MOVEM   A0-A3/D2-D5,-(A7)
 0000801A                            25      ;MOVEM   A0-A4/D3-D4,-(A7)
 0000801A                            26      ;MOVEM   (A7)+,D1-D2
-0000801A  D441                      27      ADD     D1,D2
+0000801A  D441                      27  AOP ADD     D1,D2
 0000801C  D8C3                      28      ADDA    D3,A4
 0000801E  5A46                      29      ADDI    #5,D6
 00008020  9441                      30      SUB     D1,D2
@@ -41,13 +41,13 @@ Created On: 3/9/2016 10:07:39 PM
 00008030  E845                      37      ASR     #4,D5
 00008032  ED5F                      38      ROL     #6,D7
 00008034  B240                      39      CMP     D0,D1
-00008036                            40      ;BCC     $1001
-00008036                            41      ;BGT     $1002
-00008036                            42      ;BLE     $1003
-00008036  4EB8 1004                 43      JSR     $1004
-0000803A  4E75                      44      RTS     
-0000803C                            45  
-0000803C                            46      END STARTTEST
+00008036  64D8                      40  BOP BCC     $8010
+00008038  6EFC                      41      BGT     BOP
+0000803A  6FD6                      42      BLE     $8012
+0000803C  4EB9 00008013             43      JSR     $8013
+00008042  4E75                      44      RTS     
+00008044                            45  
+00008044                            46      END STARTTEST
 
 No errors detected
 No warnings generated
@@ -56,4 +56,8 @@ No warnings generated
 SYMBOL TABLE INFORMATION
 Symbol-name         Value
 -------------------------
+AOP                 801A
+BOP                 8036
+MOP                 800C
+NOP                 8000
 STARTTEST           8000

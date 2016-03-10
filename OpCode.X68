@@ -350,11 +350,71 @@ LEA
             JMP EAAN
             RTS      
             
-Bcc         *(Implement)
-                 
-            RTS
+Bcc         MOVE.L  D5,D6               ; Copy our OpCode into D6
+            ROL.W   #8,D6               ; Rotate our condition bit into place
+            ANDI.B  #$0F,D6             ; Isolate the right-most nybble (condition)
             
-MOVEQ       *(Implement)
+            CMP.B   #%0100,D6           ; See if our Condition is '0100'
+            BEQ     BCCOP               ; If it is, we have a BCC operation
+            CMP.B   #%1110,D6           ; See if our Condition is '1110'
+            BEQ     BGTOP               ; If it is, we have a BGT operation
+            CMP.B   #%1111,D6           ; See if our Condition is '1111'
+            BEQ     BLEOP               ; If it is, we have a BLE operation
+            
+            BRA     UNKNOWN             ; Otherwise we don't know what kind of operation we have
+            
+BCCOP       MOVE.W  #'BC',(A1)+
+            MOVE.B  #'C',(A1)+
+            ADDQ    #3,D1               ; We've added three characters into our IOStringLoc
+            BRA     BccSIZE             ; Branch to find our Bcc Op's Size
+            
+BGTOP       MOVE.W  #'BG',(A1)+
+            MOVE.B  #'T',(A1)+
+            ADDQ    #3,D1               ; We've added three characters into our IOStringLoc
+            BRA     BccSIZE             ; Branch to find our Bcc Op's Size
+            
+BLEOP       MOVE.W  #'BL',(A1)+
+            MOVE.B  #'E',(A1)+
+            ADDQ    #3,D1               ; We've added three characters into our IOStringLoc
+            BRA     BccSIZE             ; Branch to find our Bcc Op's Size
+
+BccSIZE     ; Find Displacement value
+            ; Branch to proper displacement value label
+            ; Store the value of A2 into D7
+            ; Get our total displacement into D6
+            ; Print the new address as D7 +/- D6
+            
+            MOVE.B  #' ',(A1)+       ; Add a spacer into our IOStringLoc
+            MOVE.W  #'  ',(A1)+      ; Add a spacer into our IOStringLoc
+            MOVE.W  #'  ',(A1)+       ; Add a spacer into our IOStringLoc
+            ADDQ    #5,D1              ; We added 4 bytes, aka 4 spaces   
+            
+            MOVE.B  #'$',(A1)+
+            ADDQ    #1,D1
+            
+            MOVE.L  D5,D6
+            ANDI.L  #$FF,D6             ; Isolate our Size bits
+            CMP.B   #$00,D6             ; If it's equal to $00..
+            BEQ     Bcc16               ; .. It has a 16 bit displacement
+            ANDI.L  #$FF,D6             ; If it's equal to $FF..
+            BEQ     Bcc32               ; .. It has a 32 bit displacement
+            ; Otherwise, it's an 8 bit displacement
+            
+            MOVE.L  A2,D7
+            SUB.W   D6,D7 
+            
+            MOVE.L  D7,D6
+            CLR     D4
+            JSR     EAHEXtoASCII
+            
+            RTS 
+            
+Bcc16
+
+Bcc32
+            
+            RTS           
+MOVEQ
             MOVE.L  #'MOVE',(A1)+
             MOVE.B  #'Q',(A1)+
             ADDQ    #5,D1               ; We added 4 new characters to our IOStringLoc
