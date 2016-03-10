@@ -1,6 +1,6 @@
 00008000 Starting Address
 Assembler used: EASy68K Editor/Assembler v5.15.04
-Created On: 3/9/2016 9:17:37 PM
+Created On: 3/9/2016 10:07:39 PM
 
 00000000                             1  *-----------------------------------------------------------
 00000000                             2  * Title      : Test
@@ -12,37 +12,42 @@ Created On: 3/9/2016 9:17:37 PM
 00008000                             8  
 00008000  4E71                       9      NOP
 00008002  1200                      10      MOVE.B  D0,D1
-00008004  3612                      11      MOVE.W  (A2),D3
-00008006  2A1C                      12      MOVE.L  (A4)+,D5
-00008008  7E06                      13      MOVEQ   #6,D7
-0000800A  48A7 FE40                 14      MOVEM   A1/D0-D6,-(A7)
-0000800E  48A7 FE00                 15      MOVEM   D0-D6,-(A7)
-00008012  48A7 FFFE                 16      MOVEM   A0-A6/D0-D7,-(A7)
-00008016  48A7 30FE                 17      MOVEM   A0-A6/D2-D3,-(A7)
-0000801A  48A7 7EE0                 18      MOVEM   A0-A2/D1-D6,-(A7)
-0000801E  48A7 3CF0                 19      MOVEM   A0-A3/D2-D5,-(A7)
-00008022  48A7 18F8                 20      MOVEM   A0-A4/D3-D4,-(A7)
-00008026  4C9F 0006                 21      MOVEM   (A7)+,D1-D2
-0000802A  D441                      22      ADD     D1,D2
-0000802C  D8C3                      23      ADDA    D3,A4
-0000802E  5A46                      24      ADDI    #5,D6
-00008030  9441                      25      SUB     D1,D2
-00008032  C9C3                      26      MULS    D3,D4
-00008034  8CC5                      27      DIVU    D5,D6
-00008036  43F8 5012                 28      LEA     $5012,A1
-0000803A  4240                      29      CLR     D0
-0000803C  C240                      30      AND     D0,D1
-0000803E  E54B                      31      LSL     #2,D3
-00008040  E845                      32      ASR     #4,D5
-00008042  ED5F                      33      ROL     #6,D7
-00008044  B240                      34      CMP     D0,D1
-00008046                            35      ;BCC     $1001
-00008046                            36      ;BGT     $1002
-00008046                            37      ;BLE     $1003
-00008046  4EB8 1004                 38      JSR     $1004
-0000804A  4E75                      39      RTS     
-0000804C                            40  
-0000804C                            41      END STARTTEST
+00008004  123C 00AB                 11      MOVE.B  #$AB,D1
+00008008  323C ABCD                 12      MOVE.W  #$ABCD,D1
+0000800C                            13      ;MOVE.L  #$ABCDEF01,D1
+0000800C  3612                      14      MOVE.W  (A2),D3
+0000800E  2A1C                      15      MOVE.L  (A4)+,D5
+00008010  7E06                      16      MOVEQ   #6,D7
+00008012  7C07                      17      MOVEQ   #7,D6
+00008014  7805                      18      MOVEQ   #5,D4
+00008016                            19      ;MOVEM   A1/D0-D6,-(A7)
+00008016                            20      ;MOVEM   D0-D6,-(A7)
+00008016  48A7 FFFE                 21      MOVEM   A0-A6/D0-D7,-(A7)
+0000801A                            22      ;MOVEM   A0-A6/D2-D3,-(A7)
+0000801A                            23      ;MOVEM   A0-A2/D1-D6,-(A7)
+0000801A                            24      ;MOVEM   A0-A3/D2-D5,-(A7)
+0000801A                            25      ;MOVEM   A0-A4/D3-D4,-(A7)
+0000801A                            26      ;MOVEM   (A7)+,D1-D2
+0000801A  D441                      27      ADD     D1,D2
+0000801C  D8C3                      28      ADDA    D3,A4
+0000801E  5A46                      29      ADDI    #5,D6
+00008020  9441                      30      SUB     D1,D2
+00008022  C9C3                      31      MULS    D3,D4
+00008024  8CC5                      32      DIVU    D5,D6
+00008026  43F8 5012                 33      LEA     $5012,A1
+0000802A  4240                      34      CLR     D0
+0000802C  C240                      35      AND     D0,D1
+0000802E  E54B                      36      LSL     #2,D3
+00008030  E845                      37      ASR     #4,D5
+00008032  ED5F                      38      ROL     #6,D7
+00008034  B240                      39      CMP     D0,D1
+00008036                            40      ;BCC     $1001
+00008036                            41      ;BGT     $1002
+00008036                            42      ;BLE     $1003
+00008036  4EB8 1004                 43      JSR     $1004
+0000803A  4E75                      44      RTS     
+0000803C                            45  
+0000803C                            46      END STARTTEST
 
 No errors detected
 No warnings generated

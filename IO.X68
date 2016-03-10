@@ -179,8 +179,15 @@ OUTPUTOPCODE    MOVE.L  #0,IOStringLoc     ********** Testing purposes *********
                 LEA     IOStringLoc,A1     Load our IOStringLoc into A1 for string contruction purposes
         
                 ; Here we could loop all of the addresses of A2 until End, or something.
-                MOVE.L  #'####',(A1)+      Move our "OpCode location" into our IOStringLoc <---- THIS NEEDS TO BE HEX
-                ADDQ    #4,D1              We added 4 new characters                       <---- THIS NEEDS TO BE 8
+                MOVE.L  A2,D6
+                CLR     D4
+                SWAP    D6
+                JSR     EAHEXtoASCII
+                CLR     D4
+                SWAP    D6
+                JSR     EAHEXtoASCII
+*                MOVE.L  #'####',(A1)+      Move our "OpCode location" into our IOStringLoc <---- THIS NEEDS TO BE HEX
+*                ADDQ    #4,D1              We added 4 new characters                       <---- THIS NEEDS TO BE 8
                 MOVE.L  #'    ',(A1)+      Add a spacer into our IOStringLoc
                 MOVE.W  #'  ',(A1)+      Add a spacer into our IOStringLoc
                 ADDQ    #6,D1              We added 4 bytes, aka 4 spaces
