@@ -1,6 +1,6 @@
 00008000 Starting Address
 Assembler used: EASy68K Editor/Assembler v5.15.04
-Created On: 3/9/2016 10:33:55 PM
+Created On: 3/9/2016 11:32:21 PM
 
 00000000                             1  *-----------------------------------------------------------
 00000000                             2  * Title      : Test
@@ -41,15 +41,16 @@ Created On: 3/9/2016 10:33:55 PM
 00008030  E845                      37      ASR     #4,D5
 00008032  ED5F                      38      ROL     #6,D7
 00008034  B240                      39      CMP     D0,D1
-00008036  64D8                      40  BOP BCC     $8010
-00008038  6EFC                      41      BGT     BOP
-0000803A  6FD6                      42      BLE     $8012
-0000803C  4EB9 00008013             43      JSR     $8013
-00008042  4E75                      44      RTS     
-00008044                            45  
-00008044                            46      END STARTTEST
+Line 40 ERROR: Branch instruction displacement is out of range or invalid
+00008036  6400 7FC7                 40  BOP BCC.L   $1FFFF
+0000803A  6EFA                      41      BGT     BOP
+0000803C  6F00 8FD4                 42      BLE     $1012
+00008040  4EB8 1013                 43      JSR     $1013
+00008044  4E75                      44      RTS     
+00008046                            45  
+00008046                            46      END STARTTEST
 
-No errors detected
+1 error detected
 No warnings generated
 
 

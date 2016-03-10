@@ -37,10 +37,10 @@ AOP ADD     D1,D2
     ASR     #4,D5
     ROL     #6,D7
     CMP     D0,D1
-BOP BCC     $8010
+BOP BCC.L   $1FFFF
     BGT     BOP
-    BLE     $8012
-    JSR     $8013
+    BLE     $1012
+    JSR     $1013
     RTS     
 
     END STARTTEST

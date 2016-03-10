@@ -387,7 +387,8 @@ BccSIZE     ; Find Displacement value
             MOVE.B  #' ',(A1)+       ; Add a spacer into our IOStringLoc
             MOVE.W  #'  ',(A1)+      ; Add a spacer into our IOStringLoc
             MOVE.W  #'  ',(A1)+       ; Add a spacer into our IOStringLoc
-            ADDQ    #5,D1              ; We added 4 bytes, aka 4 spaces   
+            MOVE.W  #'  ',(A1)+       ; Add a spacer into our IOStringLoc
+            ADDQ    #7,D1              ; We added 4 bytes, aka 4 spaces   
             
             MOVE.B  #'$',(A1)+
             ADDQ    #1,D1
@@ -400,19 +401,77 @@ BccSIZE     ; Find Displacement value
             BEQ     Bcc32               ; .. It has a 32 bit displacement
             ; Otherwise, it's an 8 bit displacement
             
-            MOVE.L  A2,D7
-            SUB.W   D6,D7 
+            MOVE.L  A2,D7               ; Get our initial address
+            TST.B   D6                  ; Is D6 negative?
+            BMI     Bcc8NEG             ; Branch to Negative
             
-            MOVE.L  D7,D6
-            CLR     D4
-            JSR     EAHEXtoASCII
+            ADD.W   D6,D7               ; Otherwise, Add what we have to D7
+            
+            MOVE.L  D7,D6               ; Push our expected address into D6 to print
+            CLR     D4                  ; Clear counter
+            JSR     EAHEXtoASCII        ; Print
             
             RTS 
             
-Bcc16
-
-Bcc32
+Bcc8NEG     NEG.B   D6 
+            SUB.W   D6,D7
             
+            MOVE.L  D7,D6               ; Push our expected address into D6 to print
+            CLR     D4                  ; Clear counter
+            JSR     EAHEXtoASCII        ; Print
+            
+            RTS  
+         
+Bcc16       MOVE.L  A2,D7               ; Get our initial address
+            MOVE.W  (A2)+,D6
+            TST.W   D6                  ; Is D6 negative?
+            BMI     Bcc16NEG             ; Branch to Negative
+            
+            ADD.L   D6,D7               ; Otherwise, Add what we have to D7
+            
+            MOVE.L  D7,D6               ; Push our expected address into D6 to print
+            CLR     D4                  ; Clear counter
+            JSR     EAHEXtoASCII        ; Print
+            
+            RTS 
+Bcc16NEG    NEG.W   D6 
+            SUB.L   D6,D7
+            
+            MOVE.L  D7,D6               ; Push our expected address into D6 to print
+            CLR     D4                  ; Clear counter
+            JSR     EAHEXtoASCII        ; Print
+            
+            RTS  
+
+
+Bcc32       MOVE.L  A2,D7               ; Get our initial address
+            MOVE.L  (A2)+,D6
+            TST.L   D6                  ; Is D6 negative?
+            BMI     Bcc16NEG            ; Branch to Negative
+            
+            ADD.L   D6,D7               ; Otherwise, Add what we have to D7
+            
+            MOVE.L  D7,D6               ; Push our expected address into D6 to print
+            CLR     D4                  ; Clear counter
+            SWAP    D6
+            JSR     EAHEXtoASCII        ; Print
+            CLR     D4                  ; Clear counter
+            SWAP    D6
+            JSR     EAHEXtoASCII        ; Print
+            
+            RTS 
+
+Bcc32NEG    NEG.L   D6 
+            SUB.L   D6,D7
+            
+            MOVE.L  D7,D6               ; Push our expected address into D6 to print
+            CLR     D4                  ; Clear counter
+            SWAP    D6
+            JSR     EAHEXtoASCII        ; Print
+            CLR     D4                  ; Clear counter
+            SWAP    D6
+            JSR     EAHEXtoASCII        ; Print
+    
             RTS           
 MOVEQ
             MOVE.L  #'MOVE',(A1)+
