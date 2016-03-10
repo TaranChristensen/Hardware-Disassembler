@@ -1,6 +1,6 @@
 00008000 Starting Address
 Assembler used: EASy68K Editor/Assembler v5.15.04
-Created On: 3/9/2016 7:42:42 PM
+Created On: 3/9/2016 9:17:37 PM
 
 00000000                             1  *-----------------------------------------------------------
 00000000                             2  * Title      : Test
@@ -15,27 +15,34 @@ Created On: 3/9/2016 7:42:42 PM
 00008004  3612                      11      MOVE.W  (A2),D3
 00008006  2A1C                      12      MOVE.L  (A4)+,D5
 00008008  7E06                      13      MOVEQ   #6,D7
-0000800A  48A7 FEFE                 14      MOVEM   A0-A6/D0-D6,-(A7)
-0000800E  D441                      15      ADD     D1,D2
-00008010  D8C3                      16      ADDA    D3,A4
-00008012  5A46                      17      ADDI    #5,D6
-00008014  9441                      18      SUB     D1,D2
-00008016  C9C3                      19      MULS    D3,D4
-00008018  8CC5                      20      DIVU    D5,D6
-0000801A  43F8 5012                 21      LEA     $5012,A1
-0000801E  4240                      22      CLR     D0
-00008020  C240                      23      AND     D0,D1
-00008022  E54B                      24      LSL     #2,D3
-00008024  E845                      25      ASR     #4,D5
-00008026  ED5F                      26      ROL     #6,D7
-00008028  B240                      27      CMP     D0,D1
-0000802A                            28      ;BCC     $1001
-0000802A                            29      ;BGT     $1002
-0000802A                            30      ;BLE     $1003
-0000802A  4EB8 1004                 31      JSR     $1004
-0000802E  4E75                      32      RTS     
-00008030                            33  
-00008030                            34      END STARTTEST
+0000800A  48A7 FE40                 14      MOVEM   A1/D0-D6,-(A7)
+0000800E  48A7 FE00                 15      MOVEM   D0-D6,-(A7)
+00008012  48A7 FFFE                 16      MOVEM   A0-A6/D0-D7,-(A7)
+00008016  48A7 30FE                 17      MOVEM   A0-A6/D2-D3,-(A7)
+0000801A  48A7 7EE0                 18      MOVEM   A0-A2/D1-D6,-(A7)
+0000801E  48A7 3CF0                 19      MOVEM   A0-A3/D2-D5,-(A7)
+00008022  48A7 18F8                 20      MOVEM   A0-A4/D3-D4,-(A7)
+00008026  4C9F 0006                 21      MOVEM   (A7)+,D1-D2
+0000802A  D441                      22      ADD     D1,D2
+0000802C  D8C3                      23      ADDA    D3,A4
+0000802E  5A46                      24      ADDI    #5,D6
+00008030  9441                      25      SUB     D1,D2
+00008032  C9C3                      26      MULS    D3,D4
+00008034  8CC5                      27      DIVU    D5,D6
+00008036  43F8 5012                 28      LEA     $5012,A1
+0000803A  4240                      29      CLR     D0
+0000803C  C240                      30      AND     D0,D1
+0000803E  E54B                      31      LSL     #2,D3
+00008040  E845                      32      ASR     #4,D5
+00008042  ED5F                      33      ROL     #6,D7
+00008044  B240                      34      CMP     D0,D1
+00008046                            35      ;BCC     $1001
+00008046                            36      ;BGT     $1002
+00008046                            37      ;BLE     $1003
+00008046  4EB8 1004                 38      JSR     $1004
+0000804A  4E75                      39      RTS     
+0000804C                            40  
+0000804C                            41      END STARTTEST
 
 No errors detected
 No warnings generated

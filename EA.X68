@@ -338,15 +338,15 @@ DNOA     ; No An Skip label
     BSET.L  #$1F,D7     ; Set our MSB to equal 1
  
 DNOEA    ; No An Ending (aka Single An) Skip Label
-    ADD.B   #1,D7       ; Add 1 for 0ing balance
+    ADDQ.B  #1,D7       ; Add 1 for 0ing balance
     BCLR    #$08,D7     ; Incase we're iterated base FF in A
     ROR.L   D7,D6       ; Rotate our A bits back into view
     ROR.L   #8,D6       ; Rotate our D bits back into place
-    ;ROR.L   #1,D6       ; Rotate an extra bit over, to account for the loop
+    ROR.L   #1,D6       ; Rotate an extra bit over, to account for the loop
     MOVE.B  #$FF,D7     ; Initilize D7
 
 DDNSL    ; Decrement Dn Start Loop  
-    ADDQ    #1,D7       ; Itterate D7
+    ADDQ.B  #1,D7       ; Itterate D7
     ROL.L   #1,D6       ; Rotate one bit to the right  
     CMP.B   #8,D7       ; Check if we've hit D8
     BEQ     ENDEAMOVEMPD ; If we have, break the loop
@@ -406,6 +406,7 @@ EAUNKN
     RTS
 
 * Put variables and constants here
+
 
 
 
