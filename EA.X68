@@ -115,10 +115,11 @@ EAAPRE
 ;If the EA is a #<data> EA    
 ;This method assume D6 contains the Reg for #<data>  
 EAID
-    MOVE.B  #' ',(A1)+
-    ADD.B   #48,D6      ; Add 48 into D6 to turn num 0 into ASCII 0
-    MOVE.B  D6,(A1)+
+    MOVE.W  #'#$',(A1)+
     ADDQ    #2,D1
+    MOVE.W  (A2)+,D6
+    CLR     D4
+    JSR     EAHEXtoASCII
     RTS
 ;If the EA is a (xxx).W EA    
 ;This method assume D6 contains the Reg for (xxx).W  
@@ -162,8 +163,8 @@ EA111
     BRA     EAUNKN
     
 ; Uses D6 as a storage, D3 as a go-between, and D4 as a counter..
-;  This operates on the low-order word of D2, and pushes exactly 4 
-;  characters into IOStringLoc, converted from HEX of D2's nybble,
+;  This operates on the low-order word of D6, and pushes exactly 4 
+;  characters into IOStringLoc, converted from HEX of D6's nybble,
 ;  to ASCII in IOStringLoc
 EAHEXtoASCII    ADDQ    #1,D4
                 ROL.W   #4,D6              Get the left-most nyblle to the front..

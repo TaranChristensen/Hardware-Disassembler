@@ -368,8 +368,11 @@ MOVEQ       *(Implement)
             ANDI.L  #$00FF,D6           ; Isolate the Src EA bits
             
             MOVE.B  #'#',(A1)+
+            MOVE.B  #'$',(A1)+
             ADDQ    #1,D1               ; We added 4 bytes, aka 4 spaces
-            ; THIS SECTION NEEDS TO POINT TO IMMEDIATE DATA EA, of size Word if it makes a difference
+            MOVE.B  #2,D4               ; "Start" at 2 characters
+            ROL.L   #$8,D6
+            JSR     EAHEXtoASCII
             
             MOVE.B  #',',(A1)+
             ADDQ    #1,D1
