@@ -1,0 +1,47 @@
+00008000 Starting Address
+Assembler used: EASy68K Editor/Assembler v5.15.04
+Created On: 3/9/2016 7:42:42 PM
+
+00000000                             1  *-----------------------------------------------------------
+00000000                             2  * Title      : Test
+00000000                             3  * Written by : Cirlces
+00000000                             4  * Date       : 03/09/16
+00000000                             5  * Description: Test file to test the 20 required OpCodes
+00000000                             6  *-----------------------------------------------------------
+00008000                             7  STARTTEST: ORG    $8000
+00008000                             8  
+00008000  4E71                       9      NOP
+00008002  1200                      10      MOVE.B  D0,D1
+00008004  3612                      11      MOVE.W  (A2),D3
+00008006  2A1C                      12      MOVE.L  (A4)+,D5
+00008008  7E06                      13      MOVEQ   #6,D7
+0000800A  48A7 FEFE                 14      MOVEM   A0-A6/D0-D6,-(A7)
+0000800E  D441                      15      ADD     D1,D2
+00008010  D8C3                      16      ADDA    D3,A4
+00008012  5A46                      17      ADDI    #5,D6
+00008014  9441                      18      SUB     D1,D2
+00008016  C9C3                      19      MULS    D3,D4
+00008018  8CC5                      20      DIVU    D5,D6
+0000801A  43F8 5012                 21      LEA     $5012,A1
+0000801E  4240                      22      CLR     D0
+00008020  C240                      23      AND     D0,D1
+00008022  E54B                      24      LSL     #2,D3
+00008024  E845                      25      ASR     #4,D5
+00008026  ED5F                      26      ROL     #6,D7
+00008028  B240                      27      CMP     D0,D1
+0000802A                            28      ;BCC     $1001
+0000802A                            29      ;BGT     $1002
+0000802A                            30      ;BLE     $1003
+0000802A  4EB8 1004                 31      JSR     $1004
+0000802E  4E75                      32      RTS     
+00008030                            33  
+00008030                            34      END STARTTEST
+
+No errors detected
+No warnings generated
+
+
+SYMBOL TABLE INFORMATION
+Symbol-name         Value
+-------------------------
+STARTTEST           8000

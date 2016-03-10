@@ -167,11 +167,6 @@ IOORTAG2        OR.B    D3,D2              Store our nybble into D2
                 BGT     STARTLESSTHNEND    branch if the starting is greater than the ending
                 
                 CLR.L   D1
-        
-                
-                MOVE.L  #$48A7FFFE,(A2)+   Push OpCode for MOVEM.L (A7)+,A0-A6/D0-D7 into our start address
-                MOVE.W  #$3200,(A2)+       Push OpCode for Move.W D0,D1 into our start address
-                MOVE.W  #$2200,(A2)+       Push OpCode for Move.L D0,D1 into our start address
                 
                 MOVE.L  StartAddress,A2    Push our start address into A2 
                 
@@ -179,9 +174,6 @@ IOORTAG2        OR.B    D3,D2              Store our nybble into D2
 
 OUTPUTOPCODE    MOVE.L  #0,IOStringLoc     ********** Testing purposes ********** 
                 CLR.L   D1
-                ; <Testing section>        
-
-                ; </Testing section>
         
 
                 LEA     IOStringLoc,A1     Load our IOStringLoc into A1 for string contruction purposes
@@ -190,7 +182,8 @@ OUTPUTOPCODE    MOVE.L  #0,IOStringLoc     ********** Testing purposes *********
                 MOVE.L  #'####',(A1)+      Move our "OpCode location" into our IOStringLoc <---- THIS NEEDS TO BE HEX
                 ADDQ    #4,D1              We added 4 new characters                       <---- THIS NEEDS TO BE 8
                 MOVE.L  #'    ',(A1)+      Add a spacer into our IOStringLoc
-                ADDQ    #4,D1              We added 4 bytes, aka 4 spaces
+                MOVE.W  #'  ',(A1)+      Add a spacer into our IOStringLoc
+                ADDQ    #6,D1              We added 4 bytes, aka 4 spaces
         
                 JSR OPGETCODE              Get the OpCode pointed at by A2, it's string stored in IOStringLoc
                 
@@ -284,6 +277,8 @@ STARTGTEND      DC.B    'The ending address was less than the starting address, 
 StartAddress    DS.L    1
 EndingAddress   DS.L    1
 COUNTER         DS.L    1 keep track of the lines on the screen
+
+
 
 
 

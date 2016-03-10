@@ -161,23 +161,23 @@ CNRJML
             LSR.L   #1,D6              ; Shift another bit
             BTST    #$00,D6            ; See if our right-most bit is set
             BNE     JSR                ; If this one is set, branch to JSR
-            
-            BRA     MOVEM
-                                       ; LEA's middle most left nybble is unique (---1)
-            BTST    #1,D6              ; Check the right most bit's value
-            BEQ     LEA                ; If equals 1, branch
+*            
+*            BRA MOVEM
+*                                       ; LEA's middle most left nybble is unique (---1)
+*            BTST    #0,D6              ; Check the right most bit's value
+*            BNE     LEA                ; If equals 1, branch
                
                                        ; MOVEM's middle most left nybble is unique (1-00)
-            ROR.L   #1,D6              ; first bit must be 0, rotate 1 bit 
+            ROR.L   #2,D6              ; first bit must be 0, rotate 1 bit 
             BTST    #0,D6               ; Compare again for 00 match
-            BEQ     MOVEM                           
+            BNE     MOVEM                           
                                        
-            MOVE.L  D5,D6              ; Push D5 into D6; JSR's middle nybbles are unique (1110 10--)
-            ROR.L   #6,D6              ; Rotate 6 bits
-            ANDI.L  #$00FF,D6          ; Isolate the 8 known bits (00 1110 10)
-            CMP.L   #$003A,D6          ; Compare
-            BEQ     JSR                ; Branch
-            
+*            MOVE.L  D5,D6              ; Push D5 into D6; JSR's middle nybbles are unique (1110 10--)
+*            ROR.L   #6,D6              ; Rotate 6 bits
+*            ANDI.L  #$00FF,D6          ; Isolate the 8 known bits (00 1110 10)
+*            CMP.L   #$003A,D6          ; Compare
+*            BEQ     JSR                ; Branch
+*            
             BRA     UNKNOWN            ; If it doesnt any match, then it's Unknown
 
 
@@ -219,8 +219,8 @@ CLRL        MOVE.W  #'CL',(A1)+
             
 CLROP       MOVE.B  #' ',(A1)+
             MOVE.W  #'  ',(A1)+      ; Add a spacer into our IOStringLoc
-            MOVE.B  #' ',(A1)+
-            ADDQ    #4,D1              ; We added 4 bytes, aka 4 spaces
+            MOVE.W  #'  ',(A1)+
+            ADDQ    #5,D1              ; We added 4 bytes, aka 4 spaces
             
             MOVE.L  D5,D6              ; Push D5 into D6
             ANDI.L  #$003F,D6          ; Isolate the Src EA bits 
@@ -234,8 +234,10 @@ NOP
             MOVE.B  #'P',(A1)+
             ADDQ    #3,D1              ; We added 3 new characters to our IOStringLoc 
             
-            MOVE.L  #'    ',(A1)+      ; Add a spacer into our IOStringLoc
-            ADDQ    #4,D1              ; We added 4 bytes, aka 4 spaces        
+            MOVE.B  #' ',(A1)+       ; Add a spacer into our IOStringLoc
+            MOVE.W  #'  ',(A1)+      ; Add a spacer into our IOStringLoc
+            MOVE.W  #'  ',(A1)+       ; Add a spacer into our IOStringLoc
+            ADDQ    #5,D1              ; We added 4 bytes, aka 4 spaces        
             RTS
 
 ;  Here we assume that all 16 bits have been confirmed            
@@ -244,8 +246,10 @@ RTS
             MOVE.B  #'S',(A1)+
             ADDQ    #3,D1              ; We added 3 new characters to our IOStringLoc 
             
-            MOVE.L  #'    ',(A1)+      ; Add a spacer into our IOStringLoc
-            ADDQ    #4,D1              ; We added 4 bytes, aka 4 spaces        
+            MOVE.B  #' ',(A1)+       ; Add a spacer into our IOStringLoc
+            MOVE.W  #'  ',(A1)+      ; Add a spacer into our IOStringLoc
+            MOVE.W  #'  ',(A1)+       ; Add a spacer into our IOStringLoc
+            ADDQ    #5,D1              ; We added 4 bytes, aka 4 spaces        
             RTS
             
 
@@ -257,8 +261,8 @@ JSR
             
             MOVE.B  #' ',(A1)+
             MOVE.W  #'  ',(A1)+      ; Add a spacer into our IOStringLoc
-            MOVE.B  #' ',(A1)+
-            ADDQ    #4,D1              ; We added 4 bytes, aka 4 spaces
+            MOVE.L  #'    ',(A1)+      ; Add a spacer into our IOStringLoc
+            ADDQ    #7,D1              ; We added 4 bytes, aka 4 spaces
             MOVE.L  D5,D6              ; Push D5 into D6
             
             ANDI.L  #$003F,D6          ; Isolate the Src EA bits 
@@ -287,8 +291,7 @@ MOVEML      MOVE.B  #'L',(A1)+
             
 MOVEMOP     MOVE.B  #' ',(A1)+         ; Add a spacer into our IOStringLoc
             MOVE.W  #'  ',(A1)+        ;
-            MOVE.B  #' ',(A1)+         ;
-            ADDQ    #4,D1              ; We added 4 bytes, aka 4 spaces 
+            ADDQ    #3,D1              ; We added 4 bytes, aka 4 spaces 
             
             LSR.L   #4,D6              ; Shift our OpCode 4 bits to the left of Size (going to the right)
             BTST    #$00,D6            ; Check our Direction bit
@@ -330,7 +333,8 @@ LEA
              
             MOVE.B  #' ',(A1)+          ; Added an extra space here, due to only 3 character OpCode
             MOVE.L  #'    ',(A1)+       ; Add a spacer into our IOStringLoc
-            ADDQ    #5,D1               ; We added 4 bytes, aka 4 spaces
+            MOVE.W  #'  ',(A1)+ 
+            ADDQ    #7,D1               ; We added 4 bytes, aka 4 spaces
             
             MOVE.L  D5,D6               ; Copy D5 into D6
             ANDI.L  #$003F,D6           ; Isolate the Src EA bits
@@ -357,7 +361,8 @@ MOVEQ       *(Implement)
             
             MOVE.B  #' ',(A1)+
             MOVE.W  #'  ',(A1)+         ; Add a spacer into our IOStringLoc
-            ADDQ    #3,D1               ; We added 4 bytes, aka 4 spaces
+            MOVE.W  #'  ',(A1)+
+            ADDQ    #4,D1               ; We added 4 bytes, aka 4 spaces
             
             MOVE.L  D5,D6               ; Copy D5 into D6
             ANDI.L  #$00FF,D6           ; Isolate the Src EA bits
@@ -372,7 +377,7 @@ MOVEQ       *(Implement)
             MOVE.L  D5,D6               ; Copy D5 into D6
             ROR.L   #8,D6               ; Rotate 9 bits to the right (Dn Dst bits)
             ROR.L   #1,D6               ; Rotate 9 bits to the right (Dn Dst bits)
-            ANDI.L  #$0003,D6           ; Isolate the Dn Destination bits
+            ANDI.L  #$0007,D6           ; Isolate the Dn Destination bits
             JMP EADN
             
             RTS 
@@ -382,7 +387,8 @@ DIVU
             ADDQ    #4,D1               ; We added 4 new characters to our IOStringLoc
             
             MOVE.L  #'    ',(A1)+       ; Add a spacer into our IOStringLoc
-            ADDQ    #4,D1               ; We added 4 bytes, aka 4 spaces
+            MOVE.W  #'  ',(A1)+       ; Add a spacer into our IOStringLoc
+            ADDQ    #6,D1               ; We added 4 bytes, aka 4 spaces
             
             MOVE.L  D5,D6               ; Copy D5 into D6
             ANDI.L  #$003F,D6           ; Isolate the Src EA bits
@@ -394,7 +400,7 @@ DIVU
             MOVE.L  D5,D6               ; Copy D5 into D6
             ROR.L   #8,D6               ; Rotate 9 bits to the right (Dn Dst bits)
             ROR.L   #1,D6               ; Rotate 9 bits to the right (Dn Dst bits)
-            ANDI.L  #$0003,D6           ; Isolate the Dn Destination bits
+            ANDI.L  #$0007,D6           ; Isolate the Dn Destination bits
             JMP EADN
             
             RTS
@@ -500,8 +506,8 @@ CMPL        MOVE.W  #'CM',(A1)+
             
 CMPOP       MOVE.B  #' ',(A1)+
             MOVE.W  #'  ',(A1)+      ; Add a spacer into our IOStringLoc
-            MOVE.B  #' ',(A1)+
-            ADDQ    #4,D1              ; We added 4 bytes, aka 4 spaces
+            MOVE.W  #'  ',(A1)+
+            ADDQ    #5,D1              ; We added 4 bytes, aka 4 spaces
             
             MOVE.L  D5,D6               ; Push D5 into D6
             ANDI.L  #$003F,D6           ; Isolate the Src EA bits 
@@ -530,7 +536,8 @@ MULS        MOVE.L  #'MULS',(A1)+
             ADDQ    #4,D1               ; We added 4 new characters to our IOStringLoc
             
             MOVE.L  #'    ',(A1)+       ; Add a spacer into our IOStringLoc
-            ADDQ    #4,D1               ; We added 4 bytes, aka 4 spaces
+            MOVE.W  #'  ',(A1)+       ; Add a spacer into our IOStringLoc
+            ADDQ    #6,D1               ; We added 4 bytes, aka 4 spaces
             
             MOVE.L  D5,D6               ; Copy D5 into D6
             ANDI.L  #$003F,D6           ; Isolate the Src EA bits
@@ -542,7 +549,7 @@ MULS        MOVE.L  #'MULS',(A1)+
             MOVE.L  D5,D6               ; Copy D5 into D6
             ROR.L   #8,D6               ; Rotate 9 bits to the right (Dn Dst bits)
             ROR.L   #1,D6               ; Rotate 9 bits to the right (Dn Dst bits)
-            ANDI.L  #$0003,D6           ; Isolate the Dn Destination bits
+            ANDI.L  #$0007,D6           ; Isolate the Dn Destination bits
             JMP EADN
             
             RTS
@@ -565,24 +572,23 @@ AND         CMP.B   #%0110,D6            ; See if D6 is size "%100" through "%11
             BRA     UNKNOWN
             
 ANDLEA      MOVE.L  #'AND.',(A1)+
-            ADDQ    #4,D1               ; We added 4 new characters to our IOStringLoc
             MOVE.B  #'L',(A1)+
-            ADDQ    #1,D1               ; We added 1 byte into D1
+            ADDQ    #5,D1               ; We added 5 byte into D1
             BRA     ANDEA
             
 ANDWEA      MOVE.L  #'AND.',(A1)+
-            ADDQ    #4,D1               ; We added 4 new characters to our IOStringLoc
             MOVE.B  #'W',(A1)+
-            ADDQ    #1,D1               ; We added 1 byte into D1
+            ADDQ    #5,D1               ; We added 5 byte into D1
             BRA     ANDEA
 
 ANDBEA      MOVE.L  #'AND.',(A1)+
-            ADDQ    #4,D1               ; We added 4 new characters to our IOStringLoc
             MOVE.B  #'B',(A1)+
-            ADDQ    #1,D1               ; We added 1 byte into D1
+            ADDQ    #5,D1               ; We added 5 byte into D1
             BRA     ANDEA
 
-ANDEA       MOVE.B  #$09,(A1)+          ; Add a spacer into our IOStringLoc
+ANDEA       MOVE.B  #' ',(A1)+          ; Add a spacer into our IOStringLoc
+            MOVE.W  #'  ',(A1)+          ; Add a spacer into our IOStringLoc
+            MOVE.B  #' ',(A1)+          ; Add a spacer into our IOStringLoc
             ADDQ    #1,D1               ; We added 4 bytes, aka 4 spaces
             
             MOVE.L  D5,D6
@@ -715,8 +721,9 @@ ADDAL       MOVE.L  #'ADDA',(A1)+
             BRA     ADDAN
        
 ADDAN
-            MOVE.B  #$09,(A1)+          ; Add a spacer into our IOStringLoc
-            ADDQ    #1,D1               ; We added 4 bytes, aka 4 spaces
+            MOVE.L  #'    ',(A1)+          ; Add a spacer into our IOStringLoc
+            
+            ADDQ    #4,D1               ; We added 4 bytes, aka 4 spaces
             
             MOVE.L  D5,D6               ; Copy our OpCode again
             ANDI.L  #$3F,D6             ; Isolate our EA bits
@@ -732,7 +739,8 @@ ADDAN
             ANDI.L  #$07,D6             ; Isolate our data register
             
             JSR EAAN
-                 
+            
+            RTS
 ; This label determines if the code is either ASd (ASR) or LSd (LSL) or ROd (ROL) 
 ASLSRO
             MOVE.L  D5,D6               ; Copy our OpCode
@@ -770,7 +778,7 @@ ROD         MOVE.W  #'RO',(A1)+
 ASLSRODR    MOVE.L  D5,D6               ; Copy our OpCode
             ROR.L   #8,D6               ; Shift our direction bit into place
             BTST    #$00,D6             ; Check our right-most bit 
-            BEQ     ASLSRODL            ; If it's '1', our direction is left
+            BNE     ASLSRODL            ; If it's '1', our direction is left
             
             MOVE.B  #'R',(A1)+          ; Otherwise it's right
             MOVE.B  #'.',(A1)+
@@ -807,8 +815,8 @@ ASLSROW     MOVE.B  #'W',(A1)+          ; Add W for Word
 ; This section determines if our ASLSRO is an Immediate or Dn shfit, and defaults to Immediate
 ASLSROIR    MOVE.B  #' ',(A1)+
             MOVE.W  #'  ',(A1)+
-            MOVE.B  #' ',(A1)+
-            ADDQ    #5,D1               ; We've added 5 new characters (Size char, plus spaces)
+            MOVE.W  #'  ',(A1)+
+            ADDQ    #6,D1               ; We've added 5 new characters (Size char, plus spaces)
             
             ;MOVE.L  D5,D6
             ROL.L   #1,D6               ; Get our Immediate / Register bit out front
@@ -871,7 +879,7 @@ AROD        MOVE.W  #'RO',(A1)+
 AASLSRODR   MOVE.L  D5,D6              ; Copy our OpCode
             ROR.L   #8,D6               ; Shift our direction bit into place
             BTST    #$00,D6             ; Check our right-most bit 
-            BEQ     AASLSRODL           ; If it's '1', our direction is left
+            BNE     AASLSRODL           ; If it's '1', our direction is left
             
             MOVE.B  #'R',(A1)+          ; Otherwise it's right
             ADDQ    #1,D1
@@ -897,16 +905,22 @@ AASLSROOP   MOVE.L  D5,D6               ; Copy our OpCode
             
             RTS
 UNKNOWN
-            MOVE.L  #'????',(A1)+
+            MOVE.L  #'DATA',(A1)+
             ADDQ    #4,D1           ; We added 4 new characters to our IOStringLoc 
             
             MOVE.L  #'    ',(A1)+       ; Add a spacer into our IOStringLoc
-            ADDQ    #4,D1               ; We added 4 bytes, aka 4 spaces
             MOVE.W  #'  ',(A1)+         ; Add a spacer into our IOStringLoc
-            ADDQ    #2,D1               ; We added 2 bytes, aka 2 spaces
-        
+            ADDQ    #6,D1               ; We added 6 bytes, aka 6 spaces
+            
+            MOVE.B  #'$',(A1)+
+            ADDQ    #1,D1
+            
+            MOVE.L  D5,D6
+            JSR     EAHEXtoASCII
+            
             RTS
 * Put variables and constants here
+
 
 
 
