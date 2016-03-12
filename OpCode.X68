@@ -54,14 +54,14 @@ ADDI        MOVE.L  D5,D6               ; Push D5 into D6
 ADDI8                                  ; Two consecutive tests for illegal Src EA Modes
             MOVE.L  D5,D6              ; Push D5 into D6 
             ANDI.L  #$003F,D6          ; Isolate the Src EA bits
-            CMP.L   #$003C, D6         ; Compare with illegal EA mode #<data>
+            CMP.L   #$003C,D6          ; Compare with illegal EA mode #<data>
             BEQ     UNKNOWN
             
             ROR.L   #3,D6              ; Roll 3 bits right
             ANDI.L  #$0007,D6          ; Isolate the 3 Src (Mode) bits
             CMP.L   #$0001, D6         ; Compare with illegal mode An
             BEQ     UNKNOWN
-            
+            *--------------
                                 
             MOVE.L  D5,D6              ; Push D5 into D6 
             LSR.L   #6,D6              ; Shift six bits to the right
@@ -113,7 +113,7 @@ MOVE                                   ; Two consecutive tests for illegal Dst E
             ANDI.L  #$0007,D6          ; Isolate the 3 Dst (Mode) bits
             CMP.L   #$0001, D6         ; Compare with illegal mode An
             BEQ     UNKNOWN
-                               
+            *----------------                   
             MOVE.L  D5,D6              ; Push D5 into D6 
             LSR.L   #6,D6              ; Shift six bits to the right
             LSR.L   #6,D6              ; Shift six bits to the right
@@ -235,7 +235,18 @@ CNRJML
 *-----------------------------------------------------------------------------------------
 
 ;  Here we assume the first left-most 8 bits have been confirmed: 0100 0010
-CLR         
+CLR                                    ; Two consecutive tests for illegal Src EA Modes
+            MOVE.L  D5,D6              ; Push D5 into D6 
+            ANDI.L  #$003F,D6          ; Isolate the Src EA bits
+            CMP.L   #$003C, D6         ; Compare with illegal EA mode #<data>
+            BEQ     UNKNOWN
+            
+            ROR.L   #3,D6              ; Roll 3 bits right
+            ANDI.L  #$0007,D6          ; Isolate the 3 Src (Mode) bits
+            CMP.L   #$0001,D6          ; Compare with illegal mode An
+            BEQ     UNKNOWN
+            *----------------
+            
             MOVE.L  D5,D6              ; Push D5 into D6
             LSR.L   #6,D6              ; Shift six bits to the right
             ANDI.L  #$0003,D6          ; Isolate the two size bits
@@ -307,7 +318,24 @@ RTS
             
 
 ;  Here we assume the first left-most 10 bits have been confirmed: 0100 1110 10 
-JSR         
+JSR                                    ; Five consecutive tests for illegal Src EA Modes
+            MOVE.L  D5,D6              ; Push D5 into D6 
+            ANDI.L  #$003F,D6          ; Isolate the Src EA bits
+            CMP.L   #$003C, D6         ; Compare with illegal EA mode #<data>
+            BEQ     UNKNOWN
+            
+            ROR.L   #3,D6              ; Roll 3 bits right
+            ANDI.L  #$0007,D6          ; Isolate the 3 Src (Mode) bits
+            CMP.L   #$0000,D6          ; Compare with illegal mode Dn
+            BEQ     UNKNOWN
+            CMP.L   #$0001,D6          ; Compare with illegal mode An
+            BEQ     UNKNOWN
+            CMP.L   #$0003,D6          ; Compare with illegal mode (An)+
+            BEQ     UNKNOWN
+            CMP.L   #$0004,D6          ; Compare with illegal mode -(An)
+            BEQ     UNKNOWN
+            *----------------
+
             MOVE.W  #'JS',(A1)+
             MOVE.B  #'R',(A1)+
             ADDQ    #3,D1              ; We added 3 new characters to our IOStringLoc 
@@ -324,7 +352,22 @@ JSR
             
 
 ;  Here we assume that these left-most bits have been confirmed, where - have not been confirmed: 0100 -- 001
-MOVEM       
+MOVEM                                  ; Four consecutive tests for illegal Src EA Modes
+            MOVE.L  D5,D6              ; Push D5 into D6 
+            ANDI.L  #$003F,D6          ; Isolate the Src EA bits
+            CMP.L   #$003C, D6         ; Compare with illegal EA mode #<data>
+            BEQ     UNKNOWN
+            
+            ROR.L   #3,D6              ; Roll 3 bits right
+            ANDI.L  #$0007,D6          ; Isolate the 3 Src (Mode) bits
+            CMP.L   #$0000,D6          ; Compare with illegal mode Dn
+            BEQ     UNKNOWN
+            CMP.L   #$0001,D6          ; Compare with illegal mode An
+            BEQ     UNKNOWN
+            CMP.L   #$0003,D6          ; Compare with illegal mode (An)+
+            BEQ     UNKNOWN
+            *----------------
+
             MOVE.L  #'MOVE',(A1)+
             MOVE.W  #'M.',(A1)+
             ADDQ    #6,D1              ; We added 6 new characters to our IOStringLoc 
@@ -379,7 +422,24 @@ MOVEMPOSTI  MOVE.L  D5,D6              ; Copy our OpCode to D6
             
 
 ;  Here we assume that these left-most bits have been confirmed, where - have not been confirmed: 0100 --- 111            
-LEA
+LEA                                    ; Five consecutive tests for illegal Src EA Modes
+            MOVE.L  D5,D6              ; Push D5 into D6 
+            ANDI.L  #$003F,D6          ; Isolate the Src EA bits
+            CMP.L   #$003C, D6         ; Compare with illegal EA mode #<data>
+            BEQ     UNKNOWN
+            
+            ROR.L   #3,D6              ; Roll 3 bits right
+            ANDI.L  #$0007,D6          ; Isolate the 3 Src (Mode) bits
+            CMP.L   #$0000,D6          ; Compare with illegal mode Dn
+            BEQ     UNKNOWN
+            CMP.L   #$0001,D6          ; Compare with illegal mode An
+            BEQ     UNKNOWN
+            CMP.L   #$0003,D6          ; Compare with illegal mode (An)+
+            BEQ     UNKNOWN
+            CMP.L   #$0004,D6          ; Compare with illegal mode -(An)
+            BEQ     UNKNOWN
+            *----------------
+            
             MOVE.W  #'LE',(A1)+
             MOVE.B  #'A',(A1)+
             ADDQ    #3,D1              ; We added 3 new characters to our IOStringLoc 
@@ -558,6 +618,13 @@ MOVEQ
             RTS 
             
 DIVU 
+                                       ; One test for illegal Src EA Mode
+            MOVE.L  D5,D6              ; Push D5 into D6   
+            ROR.L   #3,D6              ; Roll 3 bits right
+            ANDI.L  #$0007,D6          ; Isolate the 3 Src (Mode) bits
+            CMP.L   #$0001,D6          ; Compare with illegal mode An
+            BEQ     UNKNOWN
+            *----------------       
             MOVE.L  #'DIVU',(A1)+
             ADDQ    #4,D1               ; We added 4 new characters to our IOStringLoc
             
@@ -707,7 +774,14 @@ MULSAND     MOVE.L  D5,D6               ; Copy D5 into D6
             BEQ.S   MULS                ; ..If so, it's a MULS opcode
             BRA     AND                 ; Otherwise, it's an AND code
         
-MULS        MOVE.L  #'MULS',(A1)+
+MULS                                   ; One test for illegal Src EA Mode
+            MOVE.L  D5,D6              ; Push D5 into D6   
+            ROR.L   #3,D6              ; Roll 3 bits right
+            ANDI.L  #$0007,D6          ; Isolate the 3 Src (Mode) bits
+            CMP.L   #$0001,D6          ; Compare with illegal mode An
+            BEQ     UNKNOWN
+            *----------------
+            MOVE.L  #'MULS',(A1)+
             ADDQ    #4,D1               ; We added 4 new characters to our IOStringLoc
             
             MOVE.L  #'    ',(A1)+       ; Add a spacer into our IOStringLoc
@@ -1095,6 +1169,7 @@ UNKNOWN
             
             RTS
 * Put variables and constants here
+
 
 
 
