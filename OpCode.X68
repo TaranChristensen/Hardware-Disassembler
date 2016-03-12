@@ -180,34 +180,59 @@ CNRJML
             CMP.B   #$02,D6            ; See if matches nybble
             BEQ     CLR               
             
+*--------------------------------------------------------------------------------------            
+                                       ; LEA's left-most 10 bits are 0100 --- (111)
             MOVE.L  D5,D6              ; Push D5 into D6
-            LSR.L   #8,D6              ; Shift 8 bits to the right
+            LSR.L   #6,D6              ; Shift 6 bits to the right 
+            ANDI.L  #$0007,D6            ; Isolate 3 right-most bits
+            CMP.L   #$0007,D6            ; See if matches 111
+            BEQ     LEA                ; If equals, branch to LEA     
             
-            BTST    #$00,D6            ; See if our right-most bit is set
-            BNE     LEA                ; If our bit is set, branch to LEA     
-            
-            LSR.L   #1,D6              ; Shift another bit
-            BTST    #$00,D6            ; See if our right-most bit is set
-            BNE     JSR                ; If this one is set, branch to JSR
-*            
-*            BRA MOVEM
-*                                       ; LEA's middle most left nybble is unique (---1)
-*            BTST    #0,D6              ; Check the right most bit's value
-*            BNE     LEA                ; If equals 1, branch
+                                       ; JSR's left-most 10 bits are 0100 (111 010)
+            MOVE.L  D5,D6              ; Push D5 into D6
+            LSR.L   #6,D6              ; Shift 6 bits to the right
+            ANDI.L  #$003F,D6          ; Isolate 6 right-most bit
+            CMP.L   #$003A,D6          ; See if matches 11 1010
+            BEQ     JSR                ; If equals, branch JSR
                
-                                       ; MOVEM's middle most left nybble is unique (1-00)
-            ROR.L   #2,D6              ; first bit must be 0, rotate 1 bit 
-            BTST    #0,D6               ; Compare again for 00 match
-            BNE     MOVEM                           
-                                       
-*            MOVE.L  D5,D6              ; Push D5 into D6; JSR's middle nybbles are unique (1110 10--)
-*            ROR.L   #6,D6              ; Rotate 6 bits
-*            ANDI.L  #$00FF,D6          ; Isolate the 8 known bits (00 1110 10)
-*            CMP.L   #$003A,D6          ; Compare
-*            BEQ     JSR                ; Branch
-*            
+                                       ; MOVEM's left-most 9 bits are 0100 1- (001)
+            MOVE.L  D5,D6              ; Push D5 into D6
+            LSR.L   #7,D6              ; Shift 7 bits to the right
+            ANDI.L  #$0007,D6          ; Isolate 3 right-most bit
+            CMP.L   #$0001,D6          ; See if matches 001
+            BEQ     MOVEM              ; If equals, branch MOVEM
+      
             BRA     UNKNOWN            ; If it doesnt any match, then it's Unknown
 
+******************************************************************************************
+*            MOVE.L  D5,D6              ; Push D5 into D6
+*            LSR.L   #8,D6              ; Shift 8 bits to the right
+*            
+*            BTST    #$00,D6            ; See if our right-most bit is set
+*            BNE     LEA                ; If our bit is set, branch to LEA     
+*            
+*            LSR.L   #1,D6              ; Shift another bit
+*            BTST    #$00,D6            ; See if our right-most bit is set
+*            BNE     JSR                ; If this one is set, branch to JSR
+*            
+**            BRA MOVEM
+**                                       ; LEA's middle most left nybble is unique (---1)
+**            BTST    #0,D6              ; Check the right most bit's value
+**            BNE     LEA                ; If equals 1, branch
+*               
+*                                       ; MOVEM's middle most left nybble is unique (1-00)
+*            ROR.L   #2,D6              ; first bit must be 0, rotate 1 bit 
+*            BTST    #0,D6               ; Compare again for 00 match
+*            BNE     MOVEM                           
+*                                       
+**            MOVE.L  D5,D6              ; Push D5 into D6; JSR's middle nybbles are unique (1110 10--)
+**            ROR.L   #6,D6              ; Rotate 6 bits
+**            ANDI.L  #$00FF,D6          ; Isolate the 8 known bits (00 1110 10)
+**            CMP.L   #$003A,D6          ; Compare
+**            BEQ     JSR                ; Branch
+**            
+*            BRA     UNKNOWN            ; If it doesnt any match, then it's Unknown
+*-----------------------------------------------------------------------------------------
 
 ;  Here we assume the first left-most 8 bits have been confirmed: 0100 0010
 CLR         
@@ -298,7 +323,7 @@ JSR
             RTS
             
 
-;  Here we assume that these left-most bits have been confirmed, where - have not been confirmed: 0100 --00
+;  Here we assume that these left-most bits have been confirmed, where - have not been confirmed: 0100 -- 001
 MOVEM       
             MOVE.L  #'MOVE',(A1)+
             MOVE.W  #'M.',(A1)+
@@ -353,7 +378,7 @@ MOVEMPOSTI  MOVE.L  D5,D6              ; Copy our OpCode to D6
             RTS
             
 
-;  Here we assume that these left-most bits have been confirmed, where - have not been confirmed: 0100 ---1            
+;  Here we assume that these left-most bits have been confirmed, where - have not been confirmed: 0100 --- 111            
 LEA
             MOVE.W  #'LE',(A1)+
             MOVE.B  #'A',(A1)+
@@ -1070,6 +1095,7 @@ UNKNOWN
             
             RTS
 * Put variables and constants here
+
 
 
 
