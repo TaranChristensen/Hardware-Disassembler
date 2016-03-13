@@ -117,10 +117,25 @@ EAAPRE
 EAID
     MOVE.W  #'#$',(A1)+
     ADDQ    #2,D1
+    CMP.B   #2,D0
+    BGT     EAIDL
     MOVE.W  (A2)+,D6
     CLR     D4
     JSR     EAHEXtoASCII
     RTS
+    
+;If the EA is a #<data> EA    
+;This method assume D6 contains the Reg for #<data> of size Long
+EAIDL
+    MOVE.L  (A2)+,D6
+    CLR     D4
+    SWAP    D6
+    JSR     EAHEXtoASCII
+    SWAP    D6
+    CLR     D4
+    JSR     EAHEXtoASCII
+    RTS
+
 ;If the EA is a (xxx).W EA    
 ;This method assume D6 contains the Reg for (xxx).W  
 EAAWA
@@ -407,6 +422,7 @@ EAUNKN
     RTS
 
 * Put variables and constants here
+
 
 
 

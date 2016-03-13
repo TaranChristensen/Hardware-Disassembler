@@ -134,17 +134,23 @@ MOVEB       MOVE.L  #'MOVE',(A1)+
             MOVE.W  #'.B',(A1)+
             ADDQ    #6,D1              ; We added 6 new characters to our IOStringLoc 
             
+            MOVE.L  #1,D0               ; Put 1 into D0 to indicate it's a bytesize
+            
             BRA MOVEOP
             
 MOVEW       MOVE.L  #'MOVE',(A1)+
             MOVE.W  #'.W',(A1)+
             ADDQ    #6,D1               ; We added 6 new characters to our IOStringLoc 
             
+            MOVE.L  #2,D0               ; Put 2 into D0 to indicate it's a wordsize
+            
             BRA MOVEOP
             
 MOVEL       MOVE.L  #'MOVE',(A1)+
             MOVE.W  #'.L',(A1)+
             ADDQ    #6,D1               ; We added 6 new characters to our IOStringLoc 
+            
+            MOVE.L  #3,D0               ; Put 3 into D0 to indicate it's a longsize
             
             BRA MOVEOP
             
@@ -442,7 +448,7 @@ LEA                                    ; Five consecutive tests for illegal Src 
             
             MOVE.W  #'LE',(A1)+
             MOVE.B  #'A',(A1)+
-            ADDQ    #3,D1              ; We added 3 new characters to our IOStringLoc 
+            ADDQ    #3,D1               ; We added 3 new characters to our IOStringLoc 
              
             MOVE.B  #' ',(A1)+          ; Added an extra space here, due to only 3 character OpCode
             MOVE.L  #'    ',(A1)+       ; Add a spacer into our IOStringLoc
@@ -629,11 +635,12 @@ DIVU
             ADDQ    #4,D1               ; We added 4 new characters to our IOStringLoc
             
             MOVE.L  #'    ',(A1)+       ; Add a spacer into our IOStringLoc
-            MOVE.W  #'  ',(A1)+       ; Add a spacer into our IOStringLoc
+            MOVE.W  #'  ',(A1)+         ; Add a spacer into our IOStringLoc
             ADDQ    #6,D1               ; We added 4 bytes, aka 4 spaces
             
             MOVE.L  D5,D6               ; Copy D5 into D6
             ANDI.L  #$003F,D6           ; Isolate the Src EA bits
+            MOVE.L  #2,D0               ; Put 2 into D0 to indicate it's a wordsize
             JSR EAGETSRCEA
             
             MOVE.B  #',',(A1)+
@@ -652,7 +659,7 @@ SUB         MOVE.L  D5,D6               ; Copy D5 into D6
             LSR.L   #6,D6               ; Shift the size bits to the far right
             ANDI.B  #$7,D6              ; Isolate the size bits    
                  
-            CMP.B   #%0110,D6            ; See if D6 is size "%100" through "%110"..
+            CMP.B   #%0110,D6           ; See if D6 is size "%100" through "%110"..
             BEQ     SUBLEA              ; If it is, our OpCode is in the format of..
             CMP.B   #%101,D6            ; .. Dn ~ <EA> --> <EA>
             BEQ     SUBWEA
@@ -728,6 +735,7 @@ CMPB        MOVE.W  #'CM',(A1)+
             MOVE.B  #'.',(A1)+
             MOVE.B  #'B',(A1)+
             ADDQ    #5,D1              ; We added 5 new characters to our IOStringLoc 
+            MOVE.L  #1,D0               ; Put 1 into D0 to indicate it's a bytesize
             BRA     CMPOP
 
 ;  Here we assume that confirming these bits, 1011 --- 001 --- ---, is enough to identify CMP.W   
@@ -736,6 +744,7 @@ CMPW        MOVE.W  #'CM',(A1)+
             MOVE.B  #'.',(A1)+
             MOVE.B  #'W',(A1)+
             ADDQ    #5,D1              ; We added 5 new characters to our IOStringLoc 
+            MOVE.L  #2,D0               ; Put 2 into D0 to indicate it's a wordsize
             BRA     CMPOP
             
 ;  Here we assume that confirming these bits, 1011 --- 010 --- ---, is enough to identify CMP.L
@@ -744,6 +753,7 @@ CMPL        MOVE.W  #'CM',(A1)+
             MOVE.B  #'.',(A1)+
             MOVE.B  #'L',(A1)+
             ADDQ    #5,D1              ; We added 5 new characters to our IOStringLoc 
+            MOVE.L  #3,D0               ; Put 3 into D0 to indicate it's a longsize
             BRA     CMPOP
             
 CMPOP       MOVE.B  #' ',(A1)+
@@ -785,9 +795,10 @@ MULS                                   ; One test for illegal Src EA Mode
             ADDQ    #4,D1               ; We added 4 new characters to our IOStringLoc
             
             MOVE.L  #'    ',(A1)+       ; Add a spacer into our IOStringLoc
-            MOVE.W  #'  ',(A1)+       ; Add a spacer into our IOStringLoc
+            MOVE.W  #'  ',(A1)+         ; Add a spacer into our IOStringLoc
             ADDQ    #6,D1               ; We added 4 bytes, aka 4 spaces
             
+            MOVE.L  #2,D0               ; Put 2 into D0 to indicate it's a wordsize
             MOVE.L  D5,D6               ; Copy D5 into D6
             ANDI.L  #$003F,D6           ; Isolate the Src EA bits
             JSR EAGETSRCEA
