@@ -1,6 +1,6 @@
 00001000 Starting Address
 Assembler used: EASy68K Editor/Assembler v5.15.03
-Created On: 3/11/2016 2:07:03 PM
+Created On: 3/13/2016 12:41:44 PM
 
 00000000                             1  *-----------------------------------------------------------
 00000000                             2  * Title      : IO
@@ -8,12 +8,12 @@ Created On: 3/11/2016 2:07:03 PM
 00000000                             4  * Date       : ##/##/16
 00000000                             5  * Description: Input Output File
 00000000                             6  *-----------------------------------------------------------
-00000000  47F9 0000073C              7                  LEA     COUNTER,A3         initialize the COUNTER variable
+00000000  47F9 000007B0              7                  LEA     COUNTER,A3         initialize the COUNTER variable
 00000006  26BC 00000000              8                  MOVE.L  #0,(A3)            clear the variable
 0000000C                             9                  
 0000000C                            10  *-------Code for output-------
 0000000C                            11  
-0000000C  0693 00000014             12  IOINTRO         ADD.L   #$00000014,(A3)    COUNTER++
+0000000C  0693 00000016             12  IOINTRO         ADD.L   #$00000016,(A3)    COUNTER++
 00000012  43F9 0000026E             13                  LEA     IntroMsg,A1        Display the intro
 00000018  103C 000E                 14                  MOVE.B  #14, D0
 0000001C  4E4F                      15                  TRAP    #15
@@ -22,7 +22,7 @@ Created On: 3/11/2016 2:07:03 PM
 00000024  103C 000E                 18                  MOVE.B  #14, D0
 00000028  4E4F                      19                  TRAP    #15
 0000002A                            20  
-0000002A  43F9 000005ED             21  IOLOOP          LEA     HexStart,A1        Display the prompt and loop it
+0000002A  43F9 00000661             21  IOLOOP          LEA     HexStart,A1        Display the prompt and loop it
 00000030  103C 000E                 22                  MOVE.B  #14,D0          
 00000034  4E4F                      23                  TRAP    #15   
 00000036  5493                      24                  ADD.L   #$00000002,(A3)    COUNTER++ COUNTER++
@@ -33,301 +33,311 @@ Created On: 3/11/2016 2:07:03 PM
 0000003E  103C 0002                 29                  MOVE.B  #2,D0              uses Trap #15, Task 2
 00000042  4E4F                      30                  TRAP    #15              
 00000044                            31          
-00000044  B2BC 00000001             32                  CMP.L   #1,D1              Compares D1 to the number 1 (eg. String length of 1)
-0000004A  6700 020C                 33                  BEQ     IODONE             Branch to DONE if they are equal
-0000004E                            34          
-0000004E  4284                      35                  CLR.L   D4                 Ensure our counter (D4) is 0 
-00000050                            36  
-00000050  4EB9 00000092             37                  JSR     LENGTH_CHECK 
-00000056  4282                      38                  CLR.L   D2  
-00000058  BA3C 0001                 39                  CMP.B   #1,D5              if 1 then it passed the tests         
-0000005C                            40                  
-0000005C  6700 00C0                 41                  BEQ     IOASCIItoHEX
-00000060  60C8                      42                  BRA     IOLOOP
-00000062                            43                  
-00000062  0C93 0000001F             44  CHECK31         CMP.L   #$0000001F,(A3)    compare the counter to 29
-00000068  6E00 0004                 45                  BGT     ENTERCHECK         counter is at at least 30
-0000006C  4E75                      46                  RTS                        counter is still low
-0000006E                            47  
-0000006E  4280                      48  ENTERCHECK      CLR.L   D0
-00000070  43F9 000006A8             49                  LEA     ENTERPROMPT,A1     display the enter prompt
-00000076  103C 000E                 50                  MOVE.B  #14,D0
-0000007A  4E4F                      51                  TRAP    #15
-0000007C                            52                  
-0000007C  227C 00002000             53                  MOVE.L  #$2000,A1  
-00000082                            54  
-00000082  103C 0002                 55                  MOVE.B  #2,D0              wait for the user to hit enter
-00000086  4E4F                      56                  TRAP    #15
-00000088                            57                  
-00000088  26BC 00000000             58                  MOVE.L  #0,(A3)            clear the counter
-0000008E  5293                      59                  ADD.L   #$00000001,(A3)    COUNTER++
-00000090                            60               
-00000090  4E75                      61                  RTS
-00000092                            62                  
-00000092                            63  CLEARMEMORY     ***************************** a function to clear all data and address registers *****************************
-00000092                            64                  
-00000092  4285                      65  LENGTH_CHECK    CLR.L   D5                 store the result of the test
-00000094  7C00                      66                  MOVEQ   #$0,D6             make D6 0
-00000096  B206                      67                  CMP.B   D6,D1              see if null
-00000098  6700 0010                 68                  BEQ     BAD_LENGTH         if null then branch to bad input
-0000009C  0C41 0008                 69                  CMPI    #$8,D1             see if it is more than 8 characters long
-000000A0  6E00 0008                 70                  BGT     BAD_LENGTH         if more than 8 branch to bad input
-000000A4  1A3C 0001                 71                  MOVE.B  #$1,D5             passed the length checks so move 1
-000000A8  4E75                      72                  RTS                        go back
-000000AA                            73                  
-000000AA  7A00                      74  BAD_LENGTH      MOVEQ   #$0,D5             did not pass the test
-000000AC  43F9 00000662             75                  LEA     FAIL_INPUT,A1      load bad input message
-000000B2  103C 000E                 76                  MOVE.B  #14,D0          
-000000B6  4E4F                      77                  TRAP    #15 
-000000B8  5293                      78                  ADD.L   #$00000001,(A3)    COUNTER++
-000000BA  4E75                      79                  RTS                        go back
-000000BC                            80                  
-000000BC  43F9 000006EA             81  STARTLESSTHNEND LEA     STARTGTEND,A1      load the error 
-000000C2  103C 000E                 82                  MOVE.B  #14,D0
-000000C6  4E4F                      83                  TRAP    #15
-000000C8  5293                      84                  ADD.L   #$00000001,(A3)    COUNTER++
-000000CA  6000 FF5E                 85                  BRA     IOLOOP             go back to the start
-000000CE                            86  
-000000CE                            87  
-000000CE  4286                      88  TEST_ODD        CLR.L   D6           
-000000D0  4285                      89                  CLR.L   D5
-000000D2  7A02                      90                  MOVE.L  #$00000002,D5      divide by 2 to see remainder
-000000D4  3C02                      91                  MOVE.W  D2,D6              create a copy of the input in D6
-000000D6  8CC5                      92                  DIVU    D5,D6              divide the hex number by 2
-000000D8                            93                  
-000000D8  4846                      94                  SWAP    D6                 put the remainder on the far right
-000000DA                            95                  
-000000DA  BC3C 0001                 96                  CMP.B   #1,D6              see if the remainder is one
-000000DE  6700 0028                 97                  BEQ     BAD_EVEN           branch to bad even
-000000E2  BC3C 0003                 98                  CMP.B   #3,D6              see if the remainder is three
-000000E6  6700 0020                 99                  BEQ     BAD_EVEN           branch to bad even
-000000EA  BC3C 0005                100                  CMP.B   #5,D6              see if the remainder is five
-000000EE  6700 0018                101                  BEQ     BAD_EVEN           branch to bad even
-000000F2  BC3C 0007                102                  CMP.B   #7,D6              see if the remainder is seven
-000000F6  6700 0010                103                  BEQ     BAD_EVEN           branch to bad even
-000000FA  BC3C 0009                104                  CMP.B   #9,D6              see if the remainder is nine
-000000FE  6700 0008                105                  BEQ     BAD_EVEN           branch to bad even    
-00000102                           106              
-00000102  4286                     107                  CLR.L   D6
-00000104  4285                     108                  CLR.L   D5
-00000106                           109   
-00000106  4E75                     110                  RTS
-00000108                           111                  
-00000108                           112                  
-00000108                           113                  
-00000108  4285                     114  BAD_EVEN        CLR.L   D5
-0000010A  4286                     115                  CLR.L   D6
-0000010C  43F9 00000662            116                  LEA     FAIL_INPUT,A1      load bad input message  
-00000112  103C 000E                117                  MOVE.B  #14,D0          
-00000116  4E4F                     118                  TRAP    #15 
-00000118  5293                     119                  ADD.L   #$00000001,(A3)    COUNTER++
-0000011A  6000 FF0E                120                  BRA     IOLOOP             go back to the beginning
-0000011E                           121                  
-0000011E                           122  *-------Code for the starting address-------
-0000011E                           123  
-0000011E  5244                     124  IOASCIItoHEX    ADDQ    #1,D4
-00000120  E98A                     125                  LSL.L   #4,D2              Scoot D2 a nybble
-00000122  1619                     126                  MOVE.B  (A1)+,D3           Move a Byte from A1's address to D3
-00000124  0403 0030                127                  SUB.B   #48,D3             Sub 48 to turn ASCII 0 into binary 0
-00000128  B63C 0009                128                  CMP.B   #9,D3              If our number is greater than 9..
-0000012C  6F02                     129                  BLE.S   IOORTAG            .. it must be a character; A-F: 
-0000012E  5F03                     130                  SUB.B   #7,D3              Sub 7 to turn A into 10
-00000130  8403                     131  IOORTAG         OR.B    D3,D2              Store our nybble into D2
-00000132  B204                     132                  CMP.B   D4,D1              See if we've read all the characters
-00000134  66E8                     133                  BNE.S   IOASCIItoHEX       Continue if we haven't
-00000136                           134              
-00000136                           135              
-00000136  23FC 00000000 00000734   136                  MOVE.L  #0,StartAddress
-00000140  23C2 00000734            137                  MOVE.L  D2,StartAddress    Store our StartAddress
-00000146                           138                  
-00000146  4EB8 00CE                139                  JSR     TEST_ODD           test if the address is odd
-0000014A                           140                  
-0000014A  4281                     141                  CLR.L   D1
-0000014C  4282                     142                  CLR.L   D2
-0000014E                           143  
-0000014E                           144  *-------Code for the ending address-------
-0000014E                           145  
-0000014E  43F9 00000608            146  ENDLOOP         LEA     HexEnd,A1          load the ending address prompt
-00000154  103C 000E                147                  MOVE.B  #14,D0
-00000158  4E4F                     148                  TRAP    #15  
-0000015A  5493                     149                  ADD.L   #$00000002,(A3)
-0000015C                           150                  
-0000015C  43F9 00000100            151                  LEA     IOStringLoc,A1     Store the string of our user input at StartAddress,A1 
-00000162  103C 0002                152                  MOVE.B  #2,D0              uses Trap #15, Task 2
-00000166  4E4F                     153                  TRAP    #15              
-00000168                           154          
-00000168  B2BC 00000001            155                  CMP.L   #1,D1              Compares D1 to the number 1 (eg. String length of 1)
-0000016E  6700 00E8                156                  BEQ     IODONE             Branch to DONE if they are equal
-00000172                           157          
-00000172  4284                     158                  CLR.L   D4                 Ensure our counter (D4) is 0 
-00000174                           159  
-00000174  4EB8 0092                160                  JSR     LENGTH_CHECK       check to make sure the length is ok
-00000178  BA3C 0001                161                  CMP.B   #1,D5              if 1 then it passed the tests         
-0000017C                           162  
-0000017C  6700 0004                163                  BEQ     IOASCIItoHEX2      convert to hex
-00000180  60CC                     164                  BRA     ENDLOOP
-00000182                           165                  
-00000182  5244                     166  IOASCIItoHEX2   ADDQ    #1,D4
-00000184  E98A                     167                  LSL.L   #4,D2              Scoot D2 a nybble
-00000186  1619                     168                  MOVE.B  (A1)+,D3           Move a Byte from A1's address to D3
-00000188  0403 0030                169                  SUB.B   #48,D3             Sub 48 to turn ASCII 0 into binary 0
-0000018C  B63C 0009                170                  CMP.B   #9,D3              If our number is greater than 9..
-00000190  6F02                     171                  BLE.S   IOORTAG2           .. it must be a character; A-F: 
-00000192  5F03                     172                  SUB.B   #7,D3              Sub 7 to turn A into 10
-00000194  8403                     173  IOORTAG2        OR.B    D3,D2              Store our nybble into D2
-00000196  B204                     174                  CMP.B   D4,D1              See if we've read all the characters
-00000198  66E8                     175                  BNE.S   IOASCIItoHEX2      Continue if we haven't
-0000019A                           176              
-0000019A                           177    
-0000019A  23FC 00000000 00000738   178                  MOVE.L  #0,EndingAddress
-000001A4  23C2 00000738            179                  MOVE.L  D2,EndingAddress   Store our EndingAddress
-000001AA                           180                  
-000001AA  4EB8 00CE                181                  JSR     TEST_ODD           tezt if the ending address is odd
-000001AE                           182                  
-000001AE  2479 00000734            183                  MOVE.L  StartAddress,A2    Push our start address into A2
-000001B4                           184                  
-000001B4  B5F9 00000738            185                  CMP.L   EndingAddress,A2   compare the ending address with the startingaddress
-000001BA  6E00 FF00                186                  BGT     STARTLESSTHNEND    branch if the starting is greater than the ending
-000001BE                           187                  
-000001BE  4281                     188                  CLR.L   D1
-000001C0                           189                  
-000001C0  2479 00000734            190                  MOVE.L  StartAddress,A2    Push our start address into A2 
-000001C6                           191                  
-000001C6                           192  *-------Output Opcode------- 
-000001C6                           193  
-000001C6  23FC 00000000 00000100   194  OUTPUTOPCODE    MOVE.L  #0,IOStringLoc     ********** Testing purposes ********** 
-000001D0  4281                     195                  CLR.L   D1
-000001D2                           196          
-000001D2                           197  
-000001D2  43F9 00000100            198                  LEA     IOStringLoc,A1     Load our IOStringLoc into A1 for string contruction purposes
-000001D8                           199          
-000001D8  2C0A                     200                  MOVE.L  A2,D6
-000001DA  4244                     201                  CLR     D4
-000001DC  4846                     202                  SWAP    D6
-Line 203 ERROR: Undefined symbol
-000001DE  4EB9 004DBAA6            203                  JSR     EAHEXtoASCII
-000001E4  4244                     204                  CLR     D4
-000001E6  4846                     205                  SWAP    D6
-Line 206 ERROR: Undefined symbol
-000001E8  4EB9 004DBAA6            206                  JSR     EAHEXtoASCII
-000001EE  22FC 20202020            207                  MOVE.L  #'    ',(A1)+      Add a spacer into our IOStringLoc
-000001F4  32FC 2020                208                  MOVE.W  #'  ',(A1)+      Add a spacer into our IOStringLoc
-000001F8  5C41                     209                  ADDQ    #6,D1              We added 4 bytes, aka 4 spaces
-000001FA                           210          
-Line 211 ERROR: Undefined symbol
-000001FA  4EB9 004DBAA6            211                  JSR OPGETCODE              Get the OpCode pointed at by A2, it's string stored in IOStringLoc
-00000200                           212                  
-00000200  43F9 00000100            213                  LEA     IOStringLoc,A1     Now that we've populated the string, load it's beginning
-00000206  103C 0001                214                  MOVE.B  #1,D0              Trap task 1 prints a string at A1 with #D1 bytes.
-0000020A  4E4F                     215                  TRAP    #15           
-0000020C                           216          
-0000020C  43F9 00000622            217                  LEA     SPC,A1             Puts the space before the opCode
-00000212  103C 000D                218                  MOVE.B  #13,D0
-00000216  4E4F                     219                  TRAP    #15
-00000218                           220                  
-00000218  5293                     221                  ADD.L   #$00000001,(A3)    COUNTER++
-0000021A  4EB8 0062                222                  JSR     CHECK31
-0000021E                           223                  
-0000021E  B5F9 00000738            224                  CMP.L   EndingAddress,A2   compare the current address with the ending address
-00000224  6DA0                     225                  BLT     OUTPUTOPCODE       if the current is less than the ending keep looping
-00000226                           226  
-00000226                           227  *-------Output User Input------- 
-00000226                           228  
-00000226                           229                  ; The following outputs the input, converting what we've saved in HEX to ASCII
-00000226                           230                  ; We won't need this in the final version, but the below code should be handy
-00000226                           231                  ;  for print out EA values
-00000226  2439 00000734            232                  MOVE.L  StartAddress,D2    Ensure our address is actually at D2
-0000022C  7208                     233                  MOVEQ   #8,D1              There are 8 characters in the hex of our address
-0000022E  4284                     234                  CLR.L   D4                 Ensure our counter (D4) is 0
-00000230  43F9 00000100            235                  LEA     IOStringLoc,A1     Load our IO String location, to store our output at  
-00000236                           236  
-00000236                           237          
-00000236  5244                     238  IOHEXtoASCII    ADDQ    #1,D4
-00000238  E99A                     239                  ROL.L   #4,D2              Get the left-most nyblle to the front..
-0000023A  1602                     240                  MOVE.B  D2,D3              .. Put the front-most byte into D3    
-0000023C  C63C 000F                241                  AND.B   #$0F,D3            Distill D3 down to the original left-most nybble
-00000240  B63C 0009                242                  CMP.B   #9,D3              See if our number is greater than 9..
-00000244  6F00 0004                243                  BLE     IODIGIT            If it is 9 or less, it's a digit..
-00000248  5E03                     244                  ADD.B   #7,D3              Otherwise it is a digit, and needs an additional 7
-0000024A  0603 0030                245  IODIGIT         ADD.B   #48,D3             We now how the nybble's ASCII code
-0000024E  12C3                     246                  MOVE.B  D3,(A1)+           Move the ASCII code into the output string at A1
-00000250  B204                     247                  CMP.B   D4,D1              See if we've read all the characters
-00000252  66E2                     248                  BNE.S   IOHEXtoASCII       Continue if we haven't
-00000254                           249  
-00000254  6000 FDD4                250                  BRA     IOLOOP
-00000258                           251          
-00000258                           252  *-------Finishes the program--  
-00000258                           253        
-00000258  43F9 00000632            254  IODONE          LEA     OUTRO,A1           Display the ending message 
-0000025E  103C 000E                255                  MOVE.B  #14,D0
-00000262  4E4F                     256                  TRAP    #15
-00000264  103C 0009                257                  MOVE.B  #9,D0
-00000268  4E4F                     258                  TRAP    #15                Halt Simulator
-0000026A                           259          
-0000026A  FFFF FFFF                260                  SIMHALT
-0000026E                           261          
-0000026E  =0000000D                262  CR              EQU     $0D         
-0000026E  =0000000A                263  LF              EQU     $0A 
-0000026E  =00000100                264  IOStringLoc     EQU     $0100              This is where we will store the string of the user input, and other strings
-0000026E                           265  
-0000026E                           266  *-------Various outputs------
-0000026E                           267  
-0000026E= 20 20 20 20 20 20 ...    268  IntroMsg        DC.B '                              -----------',CR,LF
-00000299= 20 20 20 20 20 20 ...    269                  DC.B '                            /             \',CR,LF
-000002C6= 20 20 20 20 20 20 ...    270                  DC.B '                           /     TEAM      \',CR,LF
-000002F4= 20 20 20 20 20 20 ...    271                  DC.B '                          /                 \',CR,LF
-00000323= 20 20 20 20 20 20 ...    272                  DC.B '                         |                   |',CR,LF
-00000353= 20 20 20 20 20 20 ...    273                  DC.B '                         |      CIRCLES      |',CR,LF
-00000383= 20 20 20 20 20 20 ...    274                  DC.B '                         |                   |',CR,LF
-000003B3= 20 20 20 20 20 20 ...    275                  DC.B '                          \                 /',CR,LF
-000003E2= 20 20 20 20 20 20 ...    276                  DC.B '                           \ DISSASSEMBLER /',CR,LF
-00000410= 20 20 20 20 20 20 ...    277                  DC.B '                            \             /',CR,LF
-0000043D= 20 20 20 20 20 20 ...    278                  DC.B '                              -----------',CR,LF,CR,LF,0
-0000046B                           279                  
-0000046B= 54 68 69 73 20 70 ...    280  Intro2          DC.B    'This program will dissassemble machine code into readable code',CR,LF
-000004AB= 49 74 20 77 69 6C ...    281                  DC.B    'It will ask for a starting and ending address',CR,LF
-000004DA= 50 6C 65 61 73 65 ...    282                  DC.B    'Please type both in hex, with a length of 8 or less',CR,LF
-0000050F= 41 6E 64 20 6E 6F ...    283                  DC.B    'And not ending in an odd number',CR,LF
-00000530= 57 68 65 6E 20 74 ...    284                  DC.B    'When the program has reached the ending address',CR,LF
-00000561= 49 74 20 77 69 6C ...    285                  DC.B    'It will assume you want to reapeat the entire process',CR,LF
-00000598= 42 75 74 20 79 6F ...    286                  DC.B    'But you can type in "0" at any starting, or ending, address to quit the program.',CR,LF,CR,LF,0
-000005ED                           287                  
-000005ED= 45 6E 74 65 72 20 ...    288  HexStart        DC.B    'Enter a starting address: ',0 Prompt for the user
-00000608= 45 6E 74 65 72 20 ...    289  HexEnd          DC.B    'Enter an ending address: ',0 Prompt for the user
-00000622= 20 20 20 20 20 00        290  SPC             DC.B    '     ',0                                tab
-00000628= 3C 45 41 3E 2C 3C ...    291  UnkEA           DC.B    '<EA>,<EA>',0                            Interim message for unkown EAs.
-00000632= 54 68 61 6E 6B 20 ...    292  OUTRO           DC.B    'Thank you for using Team Circles Dissassembler!',0                            Outro message
-00000662= 49 20 61 6D 20 73 ...    293  FAIL_INPUT      DC.B    'I am sorry, but you typed an address that did not meet the criteria',CR,LF,0 
-000006A8= 54 68 65 20 73 63 ...    294  ENTERPROMPT     DC.B    'The screen limit has been reached, please press enter to continue',0
-000006EA= 54 68 65 20 65 6E ...    295  STARTGTEND      DC.B    'The ending address was less than the starting address, please try again',CR,LF,0
-00000734                           296  
-00000734                           297  *-------Variables and constants------
-00000734                           298  
-00000734                           299  StartAddress    DS.L    1
-00000738                           300  EndingAddress   DS.L    1
-0000073C                           301  COUNTER         DS.L    1 keep track of the lines on the screen
-00000740                           302  
-00000740                           303  
-00000740                           304  
-00000740                           305  
-00000740                           306  
-00000740                           307  
-00000740                           308  
-00000740                           309  
-00000740                           310  
-00000740                           311  
-00000740                           312  
-00000740                           313  
-00000740                           314  
-00000740                           315  
-00000740                           316  
-00000740                           317  
-00000740                           318  
-00000740                           319  
-00000740                           320  
-00000740                           321  
-00000740                           322  
-Line 323 WARNING: END directive missing, starting address not set
+00000044                            32                  ;CMP.L   #1,D1              Compares D1 to the number 1 (eg. String length of 1)
+00000044                            33                 ; BEQ     IODONE             Branch to DONE if they are equal
+00000044                            34          
+00000044  4284                      35                  CLR.L   D4                 Ensure our counter (D4) is 0 
+00000046                            36  
+00000046  4EB9 00000088             37                  JSR     LENGTH_CHECK 
+0000004C  4282                      38                  CLR.L   D2  
+0000004E  BA3C 0001                 39                  CMP.B   #1,D5              if 1 then it passed the tests         
+00000052                            40                  
+00000052  6700 00C0                 41                  BEQ     IOASCIItoHEX
+00000056  60D2                      42                  BRA     IOLOOP
+00000058                            43                  
+00000058  0C93 0000001F             44  CHECK31         CMP.L   #$0000001F,(A3)    compare the counter to 29
+0000005E  6E00 0004                 45                  BGT     ENTERCHECK         counter is at at least 30
+00000062  4E75                      46                  RTS                        counter is still low
+00000064                            47  
+00000064  4280                      48  ENTERCHECK      CLR.L   D0
+00000066  43F9 0000071C             49                  LEA     ENTERPROMPT,A1     display the enter prompt
+0000006C  103C 000E                 50                  MOVE.B  #14,D0
+00000070  4E4F                      51                  TRAP    #15
+00000072                            52                  
+00000072  227C 00002000             53                  MOVE.L  #$2000,A1  
+00000078                            54  
+00000078  103C 0002                 55                  MOVE.B  #2,D0              wait for the user to hit enter
+0000007C  4E4F                      56                  TRAP    #15
+0000007E                            57                  
+0000007E  26BC 00000000             58                  MOVE.L  #0,(A3)            clear the counter
+00000084  5293                      59                  ADD.L   #$00000001,(A3)    COUNTER++
+00000086                            60               
+00000086  4E75                      61                  RTS
+00000088                            62                  
+00000088                            63  CLEARMEMORY     ***************************** a function to clear all data and address registers *****************************
+00000088                            64                  
+00000088  4285                      65  LENGTH_CHECK    CLR.L   D5                 store the result of the test
+0000008A  7C00                      66                  MOVEQ   #$0,D6             make D6 0
+0000008C  B206                      67                  CMP.B   D6,D1              see if null
+0000008E  6700 0010                 68                  BEQ     BAD_LENGTH         if null then branch to bad input
+00000092  0C41 0008                 69                  CMPI    #$8,D1             see if it is more than 8 characters long
+00000096  6E00 0008                 70                  BGT     BAD_LENGTH         if more than 8 branch to bad input
+0000009A  1A3C 0001                 71                  MOVE.B  #$1,D5             passed the length checks so move 1
+0000009E  4E75                      72                  RTS                        go back
+000000A0                            73                  
+000000A0  7A00                      74  BAD_LENGTH      MOVEQ   #$0,D5             did not pass the test
+000000A2  43F9 000006D6             75                  LEA     FAIL_INPUT,A1      load bad input message
+000000A8  103C 000E                 76                  MOVE.B  #14,D0          
+000000AC  4E4F                      77                  TRAP    #15 
+000000AE  5293                      78                  ADD.L   #$00000001,(A3)    COUNTER++
+000000B0  4E75                      79                  RTS                        go back
+000000B2                            80                  
+000000B2  43F9 0000075E             81  STARTLESSTHNEND LEA     STARTGTEND,A1      load the error 
+000000B8  103C 000E                 82                  MOVE.B  #14,D0
+000000BC  4E4F                      83                  TRAP    #15
+000000BE  5293                      84                  ADD.L   #$00000001,(A3)    COUNTER++
+000000C0  6000 FF68                 85                  BRA     IOLOOP             go back to the start
+000000C4                            86  
+000000C4                            87  
+000000C4  4286                      88  TEST_ODD        CLR.L   D6           
+000000C6  4285                      89                  CLR.L   D5
+000000C8  7A02                      90                  MOVE.L  #$00000002,D5      divide by 2 to see remainder
+000000CA  3C02                      91                  MOVE.W  D2,D6              create a copy of the input in D6
+000000CC  8CC5                      92                  DIVU    D5,D6              divide the hex number by 2
+000000CE                            93                  
+000000CE  4846                      94                  SWAP    D6                 put the remainder on the far right
+000000D0                            95                  
+000000D0  BC3C 0001                 96                  CMP.B   #1,D6              see if the remainder is one
+000000D4  6700 0028                 97                  BEQ     BAD_EVEN           branch to bad even
+000000D8  BC3C 0003                 98                  CMP.B   #3,D6              see if the remainder is three
+000000DC  6700 0020                 99                  BEQ     BAD_EVEN           branch to bad even
+000000E0  BC3C 0005                100                  CMP.B   #5,D6              see if the remainder is five
+000000E4  6700 0018                101                  BEQ     BAD_EVEN           branch to bad even
+000000E8  BC3C 0007                102                  CMP.B   #7,D6              see if the remainder is seven
+000000EC  6700 0010                103                  BEQ     BAD_EVEN           branch to bad even
+000000F0  BC3C 0009                104                  CMP.B   #9,D6              see if the remainder is nine
+000000F4  6700 0008                105                  BEQ     BAD_EVEN           branch to bad even    
+000000F8                           106              
+000000F8  4286                     107                  CLR.L   D6
+000000FA  4285                     108                  CLR.L   D5
+000000FC                           109   
+000000FC  4E75                     110                  RTS
+000000FE                           111                  
+000000FE                           112                  
+000000FE                           113                  
+000000FE  4285                     114  BAD_EVEN        CLR.L   D5
+00000100  4286                     115                  CLR.L   D6
+00000102  43F9 000006D6            116                  LEA     FAIL_INPUT,A1      load bad input message  
+00000108  103C 000E                117                  MOVE.B  #14,D0          
+0000010C  4E4F                     118                  TRAP    #15 
+0000010E  5293                     119                  ADD.L   #$00000001,(A3)    COUNTER++
+00000110  6000 FF18                120                  BRA     IOLOOP             go back to the beginning
+00000114                           121                  
+00000114                           122  *-------Code for the starting address-------
+00000114                           123  
+00000114  5244                     124  IOASCIItoHEX    ADDQ    #1,D4
+00000116  E98A                     125                  LSL.L   #4,D2              Scoot D2 a nybble
+00000118  1619                     126                  MOVE.B  (A1)+,D3           Move a Byte from A1's address to D3
+0000011A  0403 0030                127                  SUB.B   #48,D3             Sub 48 to turn ASCII 0 into binary 0
+0000011E  B63C 0009                128                  CMP.B   #9,D3              If our number is greater than 9..
+00000122  6F02                     129                  BLE.S   IOORTAG            .. it must be a character; A-F: 
+00000124  5F03                     130                  SUB.B   #7,D3              Sub 7 to turn A into 10
+00000126  8403                     131  IOORTAG         OR.B    D3,D2              Store our nybble into D2
+00000128  B204                     132                  CMP.B   D4,D1              See if we've read all the characters
+0000012A  66E8                     133                  BNE.S   IOASCIItoHEX       Continue if we haven't
+0000012C                           134              
+0000012C                           135              
+0000012C  23FC 00000000 000007A8   136                  MOVE.L  #0,StartAddress
+00000136  23C2 000007A8            137                  MOVE.L  D2,StartAddress    Store our StartAddress
+0000013C                           138                  
+0000013C  B4BC 00000000            139                  CMP.L   #$0,D2              see if D2 is 0
+00000142  6700 0114                140                  BEQ     IODONE             Branch to DONE if they are equal
+00000146                           141                  
+00000146  4EB8 00C4                142                  JSR     TEST_ODD           test if the address is odd
+0000014A                           143                  
+0000014A  4281                     144                  CLR.L   D1
+0000014C  4282                     145                  CLR.L   D2
+0000014E                           146  
+0000014E                           147  *-------Code for the ending address-------
+0000014E                           148  
+0000014E  43F9 0000067C            149  ENDLOOP         LEA     HexEnd,A1          load the ending address prompt
+00000154  103C 000E                150                  MOVE.B  #14,D0
+00000158  4E4F                     151                  TRAP    #15  
+0000015A  5493                     152                  ADD.L   #$00000002,(A3)
+0000015C                           153                  
+0000015C  43F9 00000100            154                  LEA     IOStringLoc,A1     Store the string of our user input at StartAddress,A1 
+00000162  103C 0002                155                  MOVE.B  #2,D0              uses Trap #15, Task 2
+00000166  4E4F                     156                  TRAP    #15              
+00000168                           157          
+00000168                           158                  ;CMP.L   #1,D1              Compares D1 to the number 1 (eg. String length of 1)
+00000168                           159                 ; BEQ     IODONE             Branch to DONE if they are equal
+00000168                           160          
+00000168  4284                     161                  CLR.L   D4                 Ensure our counter (D4) is 0 
+0000016A                           162  
+0000016A  4EB8 0088                163                  JSR     LENGTH_CHECK       check to make sure the length is ok
+0000016E  BA3C 0001                164                  CMP.B   #1,D5              if 1 then it passed the tests         
+00000172                           165  
+00000172  6700 0004                166                  BEQ     IOASCIItoHEX2      convert to hex
+00000176  60D6                     167                  BRA     ENDLOOP
+00000178                           168                  
+00000178  5244                     169  IOASCIItoHEX2   ADDQ    #1,D4
+0000017A  E98A                     170                  LSL.L   #4,D2              Scoot D2 a nybble
+0000017C  1619                     171                  MOVE.B  (A1)+,D3           Move a Byte from A1's address to D3
+0000017E  0403 0030                172                  SUB.B   #48,D3             Sub 48 to turn ASCII 0 into binary 0
+00000182  B63C 0009                173                  CMP.B   #9,D3              If our number is greater than 9..
+00000186  6F02                     174                  BLE.S   IOORTAG2           .. it must be a character; A-F: 
+00000188  5F03                     175                  SUB.B   #7,D3              Sub 7 to turn A into 10
+0000018A  8403                     176  IOORTAG2        OR.B    D3,D2              Store our nybble into D2
+0000018C  B204                     177                  CMP.B   D4,D1              See if we've read all the characters
+0000018E  66E8                     178                  BNE.S   IOASCIItoHEX2      Continue if we haven't
+00000190                           179              
+00000190                           180    
+00000190  23FC 00000000 000007AC   181                  MOVE.L  #0,EndingAddress
+0000019A  23C2 000007AC            182                  MOVE.L  D2,EndingAddress   Store our EndingAddress
+000001A0                           183                  
+000001A0  B4BC 00000000            184                  CMP.L   #$0,D2              see if D2 is 0
+000001A6  6700 00B0                185                  BEQ     IODONE             Branch to DONE if they are equal
+000001AA                           186                  
+000001AA  4EB8 00C4                187                  JSR     TEST_ODD           tezt if the ending address is odd
+000001AE                           188                  
+000001AE  2479 000007A8            189                  MOVE.L  StartAddress,A2    Push our start address into A2
+000001B4                           190                  
+000001B4  B5F9 000007AC            191                  CMP.L   EndingAddress,A2   compare the ending address with the startingaddress
+000001BA  6E00 FEF6                192                  BGT     STARTLESSTHNEND    branch if the starting is greater than the ending
+000001BE                           193                  
+000001BE  4281                     194                  CLR.L   D1
+000001C0                           195                  
+000001C0  2479 000007A8            196                  MOVE.L  StartAddress,A2    Push our start address into A2 
+000001C6                           197                  
+000001C6                           198  *-------Output Opcode------- 
+000001C6                           199  
+000001C6  23FC 00000000 00000100   200  OUTPUTOPCODE    MOVE.L  #0,IOStringLoc     ********** Testing purposes ********** 
+000001D0  4281                     201                  CLR.L   D1
+000001D2                           202          
+000001D2                           203  
+000001D2  43F9 00000100            204                  LEA     IOStringLoc,A1     Load our IOStringLoc into A1 for string contruction purposes
+000001D8                           205          
+000001D8  2C0A                     206                  MOVE.L  A2,D6
+000001DA  4244                     207                  CLR     D4
+000001DC  4846                     208                  SWAP    D6
+Line 209 ERROR: Undefined symbol
+000001DE  4EB9 004DBAA6            209                  JSR     EAHEXtoASCII
+000001E4  4244                     210                  CLR     D4
+000001E6  4846                     211                  SWAP    D6
+Line 212 ERROR: Undefined symbol
+000001E8  4EB9 004DBAA6            212                  JSR     EAHEXtoASCII
+000001EE  22FC 20202020            213                  MOVE.L  #'    ',(A1)+      Add a spacer into our IOStringLoc
+000001F4  32FC 2020                214                  MOVE.W  #'  ',(A1)+      Add a spacer into our IOStringLoc
+000001F8  5C41                     215                  ADDQ    #6,D1              We added 4 bytes, aka 4 spaces
+000001FA                           216          
+Line 217 ERROR: Undefined symbol
+000001FA  4EB9 004DBAA6            217                  JSR OPGETCODE              Get the OpCode pointed at by A2, it's string stored in IOStringLoc
+00000200                           218                  
+00000200  43F9 00000100            219                  LEA     IOStringLoc,A1     Now that we've populated the string, load it's beginning
+00000206  103C 0001                220                  MOVE.B  #1,D0              Trap task 1 prints a string at A1 with #D1 bytes.
+0000020A  4E4F                     221                  TRAP    #15           
+0000020C                           222          
+0000020C  43F9 00000696            223                  LEA     SPC,A1             Puts the space before the opCode
+00000212  103C 000D                224                  MOVE.B  #13,D0
+00000216  4E4F                     225                  TRAP    #15
+00000218                           226                  
+00000218  5293                     227                  ADD.L   #$00000001,(A3)    COUNTER++
+0000021A  4EB8 0058                228                  JSR     CHECK31
+0000021E                           229                  
+0000021E  B5F9 000007AC            230                  CMP.L   EndingAddress,A2   compare the current address with the ending address
+00000224  6DA0                     231                  BLT     OUTPUTOPCODE       if the current is less than the ending keep looping
+00000226                           232  
+00000226                           233  *-------Output User Input------- 
+00000226                           234  
+00000226                           235                  ; The following outputs the input, converting what we've saved in HEX to ASCII
+00000226                           236                  ; We won't need this in the final version, but the below code should be handy
+00000226                           237                  ;  for print out EA values
+00000226  2439 000007A8            238                  MOVE.L  StartAddress,D2    Ensure our address is actually at D2
+0000022C  7208                     239                  MOVEQ   #8,D1              There are 8 characters in the hex of our address
+0000022E  4284                     240                  CLR.L   D4                 Ensure our counter (D4) is 0
+00000230  43F9 00000100            241                  LEA     IOStringLoc,A1     Load our IO String location, to store our output at  
+00000236                           242  
+00000236                           243          
+00000236  5244                     244  IOHEXtoASCII    ADDQ    #1,D4
+00000238  E99A                     245                  ROL.L   #4,D2              Get the left-most nyblle to the front..
+0000023A  1602                     246                  MOVE.B  D2,D3              .. Put the front-most byte into D3    
+0000023C  C63C 000F                247                  AND.B   #$0F,D3            Distill D3 down to the original left-most nybble
+00000240  B63C 0009                248                  CMP.B   #9,D3              See if our number is greater than 9..
+00000244  6F00 0004                249                  BLE     IODIGIT            If it is 9 or less, it's a digit..
+00000248  5E03                     250                  ADD.B   #7,D3              Otherwise it is a digit, and needs an additional 7
+0000024A  0603 0030                251  IODIGIT         ADD.B   #48,D3             We now how the nybble's ASCII code
+0000024E  12C3                     252                  MOVE.B  D3,(A1)+           Move the ASCII code into the output string at A1
+00000250  B204                     253                  CMP.B   D4,D1              See if we've read all the characters
+00000252  66E2                     254                  BNE.S   IOHEXtoASCII       Continue if we haven't
+00000254                           255  
+00000254  6000 FDD4                256                  BRA     IOLOOP
+00000258                           257          
+00000258                           258  *-------Finishes the program--  
+00000258                           259        
+00000258  43F9 000006A6            260  IODONE          LEA     OUTRO,A1           Display the ending message 
+0000025E  103C 000E                261                  MOVE.B  #14,D0
+00000262  4E4F                     262                  TRAP    #15
+00000264  103C 0009                263                  MOVE.B  #9,D0
+00000268  4E4F                     264                  TRAP    #15                Halt Simulator
+0000026A                           265          
+0000026A  FFFF FFFF                266                  SIMHALT
+0000026E                           267          
+0000026E  =0000000D                268  CR              EQU     $0D         
+0000026E  =0000000A                269  LF              EQU     $0A 
+0000026E  =00000100                270  IOStringLoc     EQU     $0100              This is where we will store the string of the user input, and other strings
+0000026E                           271  
+0000026E                           272  *-------Various outputs------
+0000026E                           273  
+0000026E= 20 20 20 20 20 20 ...    274  IntroMsg        DC.B '                              -----------',CR,LF
+00000299= 20 20 20 20 20 20 ...    275                  DC.B '                            /             \',CR,LF
+000002C6= 20 20 20 20 20 20 ...    276                  DC.B '                           /     TEAM      \',CR,LF
+000002F4= 20 20 20 20 20 20 ...    277                  DC.B '                          /                 \',CR,LF
+00000323= 20 20 20 20 20 20 ...    278                  DC.B '                         |                   |',CR,LF
+00000353= 20 20 20 20 20 20 ...    279                  DC.B '                         |      CIRCLES      |',CR,LF
+00000383= 20 20 20 20 20 20 ...    280                  DC.B '                         |                   |',CR,LF
+000003B3= 20 20 20 20 20 20 ...    281                  DC.B '                          \                 /',CR,LF
+000003E2= 20 20 20 20 20 20 ...    282                  DC.B '                           \ DISSASSEMBLER /',CR,LF
+00000410= 20 20 20 20 20 20 ...    283                  DC.B '                            \             /',CR,LF
+0000043D= 20 20 20 20 20 20 ...    284                  DC.B '                              -----------',CR,LF,CR,LF,0
+0000046B                           285                  
+0000046B= 54 68 69 73 20 70 ...    286  Intro2          DC.B    'This program will dissassemble machine code into readable code',CR,LF
+000004AB= 49 74 20 77 69 6C ...    287                  DC.B    'It will ask for a starting and ending address',CR,LF
+000004DA= 50 6C 65 61 73 65 ...    288                  DC.B    'Please type both in hex, with a length of 8 or less',CR,LF
+0000050F= 41 6E 64 20 6E 6F ...    289                  DC.B    'And not ending in an odd number',CR,LF
+00000530= 49 66 20 61 6E 20 ...    290                  DC.B    'If an address is input that does not meet the criteria',CR,LF
+00000568= 54 68 65 20 70 72 ...    291                  DC.B    'The program will start over at the starting address prompt',CR,LF
+000005A4= 57 68 65 6E 20 74 ...    292                  DC.B    'When the program has reached the ending address',CR,LF
+000005D5= 49 74 20 77 69 6C ...    293                  DC.B    'It will assume you want to reapeat the entire process',CR,LF
+0000060C= 42 75 74 20 79 6F ...    294                  DC.B    'But you can type in "0" at any starting, or ending, address to quit the program.',CR,LF,CR,LF,0
+00000661                           295                  
+00000661= 45 6E 74 65 72 20 ...    296  HexStart        DC.B    'Enter a starting address: ',0 Prompt for the user
+0000067C= 45 6E 74 65 72 20 ...    297  HexEnd          DC.B    'Enter an ending address: ',0 Prompt for the user
+00000696= 20 20 20 20 20 00        298  SPC             DC.B    '     ',0                                tab
+0000069C= 3C 45 41 3E 2C 3C ...    299  UnkEA           DC.B    '<EA>,<EA>',0                            Interim message for unkown EAs.
+000006A6= 54 68 61 6E 6B 20 ...    300  OUTRO           DC.B    'Thank you for using Team Circles Dissassembler!',0                            Outro message
+000006D6= 49 20 61 6D 20 73 ...    301  FAIL_INPUT      DC.B    'I am sorry, but you typed an address that did not meet the criteria',CR,LF,0 
+0000071C= 54 68 65 20 73 63 ...    302  ENTERPROMPT     DC.B    'The screen limit has been reached, please press enter to continue',0
+0000075E= 54 68 65 20 65 6E ...    303  STARTGTEND      DC.B    'The ending address was less than the starting address, please try again',CR,LF,0
+000007A8                           304  
+000007A8                           305  *-------Variables and constants------
+000007A8                           306  
+000007A8                           307  StartAddress    DS.L    1
+000007AC                           308  EndingAddress   DS.L    1
+000007B0                           309  COUNTER         DS.L    1 keep track of the lines on the screen
+000007B4                           310  
+000007B4                           311  
+000007B4                           312  
+000007B4                           313  
+000007B4                           314  
+000007B4                           315  
+000007B4                           316  
+000007B4                           317  
+000007B4                           318  
+000007B4                           319  
+000007B4                           320  
+000007B4                           321  
+000007B4                           322  
+000007B4                           323  
+000007B4                           324  
+000007B4                           325  
+000007B4                           326  
+000007B4                           327  
+000007B4                           328  
+000007B4                           329  
+000007B4                           330  
+000007B4                           331  
+000007B4                           332  
+Line 333 WARNING: END directive missing, starting address not set
 
 3 errors detected
 1 warning generated
@@ -336,38 +346,38 @@ Line 323 WARNING: END directive missing, starting address not set
 SYMBOL TABLE INFORMATION
 Symbol-name         Value
 -------------------------
-BAD_EVEN            108
-BAD_LENGTH          AA
-CHECK31             62
-CLEARMEMORY         92
-COUNTER             73C
+BAD_EVEN            FE
+BAD_LENGTH          A0
+CHECK31             58
+CLEARMEMORY         88
+COUNTER             7B0
 CR                  D
-ENDINGADDRESS       738
+ENDINGADDRESS       7AC
 ENDLOOP             14E
-ENTERCHECK          6E
-ENTERPROMPT         6A8
-FAIL_INPUT          662
-HEXEND              608
-HEXSTART            5ED
+ENTERCHECK          64
+ENTERPROMPT         71C
+FAIL_INPUT          6D6
+HEXEND              67C
+HEXSTART            661
 INTRO2              46B
 INTROMSG            26E
-IOASCIITOHEX        11E
-IOASCIITOHEX2       182
+IOASCIITOHEX        114
+IOASCIITOHEX2       178
 IODIGIT             24A
 IODONE              258
 IOHEXTOASCII        236
 IOINTRO             C
 IOLOOP              2A
-IOORTAG             130
-IOORTAG2            194
+IOORTAG             126
+IOORTAG2            18A
 IOSTRINGLOC         100
-LENGTH_CHECK        92
+LENGTH_CHECK        88
 LF                  A
 OUTPUTOPCODE        1C6
-OUTRO               632
-SPC                 622
-STARTADDRESS        734
-STARTGTEND          6EA
-STARTLESSTHNEND     BC
-TEST_ODD            CE
-UNKEA               628
+OUTRO               6A6
+SPC                 696
+STARTADDRESS        7A8
+STARTGTEND          75E
+STARTLESSTHNEND     B2
+TEST_ODD            C4
+UNKEA               69C

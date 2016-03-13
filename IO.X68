@@ -29,9 +29,6 @@ IOLOOP          LEA     HexStart,A1        Display the prompt and loop it
                 MOVE.B  #2,D0              uses Trap #15, Task 2
                 TRAP    #15              
         
-                CMP.L   #1,D1              Compares D1 to the number 1 (eg. String length of 1)
-                BEQ     IODONE             Branch to DONE if they are equal
-        
                 CLR.L   D4                 Ensure our counter (D4) is 0 
 
                 JSR     LENGTH_CHECK 
@@ -59,8 +56,6 @@ ENTERCHECK      CLR.L   D0
                 ADD.L   #$00000001,(A3)    COUNTER++
              
                 RTS
-                
-CLEARMEMORY     ***************************** a function to clear all data and address registers *****************************
                 
 LENGTH_CHECK    CLR.L   D5                 store the result of the test
                 MOVEQ   #$0,D6             make D6 0
@@ -95,21 +90,11 @@ TEST_ODD        CLR.L   D6
                 
                 CMP.B   #1,D6              see if the remainder is one
                 BEQ     BAD_EVEN           branch to bad even
-                CMP.B   #3,D6              see if the remainder is three
-                BEQ     BAD_EVEN           branch to bad even
-                CMP.B   #5,D6              see if the remainder is five
-                BEQ     BAD_EVEN           branch to bad even
-                CMP.B   #7,D6              see if the remainder is seven
-                BEQ     BAD_EVEN           branch to bad even
-                CMP.B   #9,D6              see if the remainder is nine
-                BEQ     BAD_EVEN           branch to bad even    
             
                 CLR.L   D6
                 CLR.L   D5
  
-                RTS
-                
-                
+                RTS       
                 
 BAD_EVEN        CLR.L   D5
                 CLR.L   D6
@@ -151,9 +136,6 @@ ENDLOOP         LEA     HexEnd,A1          load the ending address prompt
                 LEA     IOStringLoc,A1     Store the string of our user input at StartAddress,A1 
                 MOVE.B  #2,D0              uses Trap #15, Task 2
                 TRAP    #15              
-        
-                CMP.L   #1,D1              Compares D1 to the number 1 (eg. String length of 1)
-                BEQ     IODONE             Branch to DONE if they are equal
         
                 CLR.L   D4                 Ensure our counter (D4) is 0 
 
@@ -247,7 +229,22 @@ IODIGIT         ADD.B   #48,D3             We now how the nybble's ASCII code
                 CMP.B   D4,D1              See if we've read all the characters
                 BNE.S   IOHEXtoASCII       Continue if we haven't
 
-                BRA     IOLOOP
+                LEA     CONTINUE,A1        ask if the user wnats to exit
+                MOVE.B  #14,D0
+                TRAP    #15
+                
+                MOVE.B  #0,D1              clear D1
+                MOVE.B  #5,D0              keybaord echo trap task
+                TRAP    #15
+                
+                LEA     SPACER,A1          println
+                MOVE.B  #14,D0
+                TRAP    #15
+                
+                CMP.B   #$71,D1            compare with lowercase q
+                BEQ     IODONE             if equal then go to the end
+
+                BRA     IOLOOP             not equal so go to the beginning
         
 *-------Finishes the program--  
       
@@ -284,23 +281,26 @@ Intro2          DC.B    'This program will dissassemble machine code into readab
                 DC.B    'If an address is input that does not meet the criteria',CR,LF
                 DC.B    'The program will start over at the starting address prompt',CR,LF
                 DC.B    'When the program has reached the ending address',CR,LF
-                DC.B    'It will assume you want to reapeat the entire process',CR,LF
-                DC.B    'But you can type in "0" at any starting, or ending, address to quit the program.',CR,LF,CR,LF,0
+                DC.B    'It will ask if you want to try again with different addresses',CR,LF
+                DC.B    'When this happens press "q" to exit.',CR,LF,CR,0
                 
-HexStart        DC.B    'Enter a starting address: ',0 Prompt for the user
-HexEnd          DC.B    'Enter an ending address: ',0 Prompt for the user
+HexStart        DC.B    CR,LF,'Enter a starting address: ',0 Prompt for the user
+HexEnd          DC.B    CR,LF,'Enter an ending address: ',0 Prompt for the user
 SPC             DC.B    '     ',0                                tab
 UnkEA           DC.B    '<EA>,<EA>',0                            Interim message for unkown EAs.
-OUTRO           DC.B    'Thank you for using Team Circles Dissassembler!',0                            Outro message
+OUTRO           DC.B    CR,LF,'Thank you for using Team Circles Dissassembler!',0                            Outro message
 FAIL_INPUT      DC.B    'I am sorry, but you typed an address that did not meet the criteria',CR,LF,0 
 ENTERPROMPT     DC.B    'The screen limit has been reached, please press enter to continue',0
 STARTGTEND      DC.B    'The ending address was less than the starting address, please try again',CR,LF,0
+CONTINUE        DC.B    CR,LF,'Press "q" to quit or anything else to continue: ',0 ask to exit
+SPACER          DC.B    CR,LF,0 put the new line after the keyboard input
 
 *-------Variables and constants------
 
 StartAddress    DS.L    1
 EndingAddress   DS.L    1
 COUNTER         DS.L    1 keep track of the lines on the screen
+
 
 
 
