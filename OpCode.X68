@@ -370,8 +370,13 @@ MOVEM                                  ; Four consecutive tests for illegal Src 
             BEQ     UNKNOWN
             CMP.L   #$0001,D6          ; Compare with illegal mode An
             BEQ     UNKNOWN
-            CMP.L   #$0003,D6          ; Compare with illegal mode (An)+
-            BEQ     UNKNOWN
+            
+            MOVE.L  D5,D6              ; Copy D5 into D6
+            ANDI.W  #$0438,D6          ; Isolate our direction and EA mode bits
+            CMP.W   #$0018,D6          ; If it equals $0018..
+            BEQ     UNKNOWN            ; Dr 0, (An)+ case..
+            CMP.W   #$0420,D6          ; If it equals $0420..
+            BEQ     UNKNOWN            ; Dr 1, -(An) case..
             *----------------
 
             MOVE.L  #'MOVE',(A1)+
@@ -1274,6 +1279,7 @@ UNKNOWN
             
             RTS
 * Put variables and constants here
+
 
 
 
