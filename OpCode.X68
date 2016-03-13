@@ -827,6 +827,7 @@ MULS                                   ; One test for illegal Src EA Mode
             
             MOVE.L  #2,D0               ; Put 2 into D0 to indicate it's a wordsize
             MOVE.L  D5,D6               ; Copy D5 into D6
+            DC.L    0,0,0,0             ; Fault Bandaid
             ANDI.L  #$003F,D6           ; Isolate the Src EA bits
             JSR EAGETSRCEA
             
@@ -834,8 +835,6 @@ MULS                                   ; One test for illegal Src EA Mode
             ADDQ    #1,D1
             
             MOVE.L  D5,D6               ; Copy D5 into D6
-            MOVE.L  D5,D6               ; Done three times to combat the page skip..
-            MOVE.L  D5,D6               ; .. These done end up being MOVE, because of the simulator
             ROL.W   #7,D6               ; Rotate 9 bits to the right (Dn Dst bits)
             ANDI.L  #$0007,D6           ; Isolate the Dn Destination bits
             JMP EADN
