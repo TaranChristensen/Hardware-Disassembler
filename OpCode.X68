@@ -190,8 +190,8 @@ CNRJML
                                        ; LEA's left-most 10 bits are 0100 --- (111)
             MOVE.L  D5,D6              ; Push D5 into D6
             LSR.L   #6,D6              ; Shift 6 bits to the right 
-            ANDI.L  #$0007,D6            ; Isolate 3 right-most bits
-            CMP.L   #$0007,D6            ; See if matches 111
+            ANDI.L  #$0007,D6          ; Isolate 3 right-most bits
+            CMP.L   #$0007,D6          ; See if matches 111
             BEQ     LEA                ; If equals, branch to LEA     
             
                                        ; JSR's left-most 10 bits are 0100 (111 010)
@@ -465,7 +465,7 @@ LEA                                    ; Five consecutive tests for illegal Src 
             MOVE.L  D5,D6               ; Copy D5 into D6
             ROR.L   #8,D6               ; Rotate 9 bits to the right (An Dst bits)
             ROR.L   #1,D6               ; 
-            ANDI.L  #$0003,D6           ; Isolate the An Destination bits
+            ANDI.L  #$0005,D6           ; Isolate the An Destination bits
             JMP EAAN
             RTS      
             
@@ -657,14 +657,14 @@ DIVU
             
 SUB         MOVE.L  D5,D6               ; Copy D5 into D6
             LSR.L   #6,D6               ; Shift the size bits to the far right
-            ANDI.B  #$7,D6              ; Isolate the size bits    
+            ANDI.B  #$4,D6              ; Isolate the size bits    
                  
-            CMP.B   #%0110,D6           ; See if D6 is size "%100" through "%110"..
-            BEQ     SUBLEA              ; If it is, our OpCode is in the format of..
-            CMP.B   #%101,D6            ; .. Dn ~ <EA> --> <EA>
-            BEQ     SUBWEA
-            CMP.B   #%100,D6
-            BEQ     SUBBEA
+            CMP.B   #%0100,D6           ; See if D6 is size "%100" through "%110"..
+            BEQ     SUBEA              ; If it is, our OpCode is in the format of..
+            
+            MOVE.L  D5,D6               ; Copy D5 into D6
+            LSR.L   #6,D6               ; Shift the size bits to the far right
+            ANDI.B  #$7,D6              ; Isolate the size bits    
             
             CMP.B   #%10,D6             ; See if D6 is size "%000" through "%010"..
             BEQ     SUBLDN              ; If it is, our OpCode is in the format of..
@@ -675,6 +675,29 @@ SUB         MOVE.L  D5,D6               ; Copy D5 into D6
             
             BRA     UNKNOWN
             
+SUBEA       MOVE.L  D5,D6               ; Copy D5 into D6
+            AND.B   #$3F,D6             ; Isolate our EA Src bits
+            CMP.B   #$39,D6             ; Check for Illegal #$ mode
+            BEQ     UNKNOWN
+            AND.B   #$38,D6             ; Isolate our EA Src Mode bits
+            CMP.B   #$08,D6             ; Check for Illegal mode An
+            BEQ     UNKNOWN
+            CMP.B   #$00,D6             ; Check for Illegal mode Dn 
+            BEQ     UNKNOWN
+            
+            MOVE.L  D5,D6               ; Copy D5 into D6
+            LSR.L   #6,D6               ; Shift the size bits to the far right
+            ANDI.B  #$7,D6              ; Isolate the size bits    
+                 
+            CMP.B   #%0110,D6           ; See if D6 is size "%100" through "%110"..
+            BEQ     SUBLEA              ; If it is, our OpCode is in the format of..
+            CMP.B   #%101,D6            ; .. Dn ~ <EA> --> <EA>
+            BEQ     SUBWEA
+            CMP.B   #%100,D6
+            BEQ     SUBBEA
+            
+            BRA     UNKNOWN
+
 SUBLEA      MOVE.L  #'SUB.',(A1)+
             ADDQ    #4,D1               ; We added 4 new characters to our IOStringLoc
             MOVE.B  #'L',(A1)+
@@ -778,6 +801,10 @@ CMPOP       MOVE.B  #' ',(A1)+
         
 ; This label determines if the code is either MULS or AND, by looking at it's size bits     
 MULSAND     MOVE.L  D5,D6               ; Copy D5 into D6
+            AND.B   #$38,D6             ; Check if the Src is of mode An
+            CMP.B   #$08,D6
+            BEQ     UNKNOWN             ; An is Invalid, branch to Unknown  
+            MOVE.L  D5,D6               ; Copy D5 into D6 
             LSR.L   #6,D6               ; Shift the size bits to the far right
             ANDI.B  #$7,D6              ; Isolate the size bits
             CMP.B   #7,D6               ; See if the size is '111'..
@@ -785,11 +812,11 @@ MULSAND     MOVE.L  D5,D6               ; Copy D5 into D6
             BRA     AND                 ; Otherwise, it's an AND code
         
 MULS                                   ; One test for illegal Src EA Mode
-            MOVE.L  D5,D6              ; Push D5 into D6   
-            ROR.L   #3,D6              ; Roll 3 bits right
-            ANDI.L  #$0007,D6          ; Isolate the 3 Src (Mode) bits
-            CMP.L   #$0001,D6          ; Compare with illegal mode An
-            BEQ     UNKNOWN
+*            MOVE.L  D5,D6              ; Push D5 into D6   
+*            ROR.L   #3,D6              ; Roll 3 bits right
+*            ANDI.L  #$0007,D6          ; Isolate the 3 Src (Mode) bits
+*            CMP.L   #$0001,D6          ; Compare with illegal mode An
+*            BEQ     UNKNOWN
             *----------------
             MOVE.L  #'MULS',(A1)+
             ADDQ    #4,D1               ; We added 4 new characters to our IOStringLoc
@@ -807,20 +834,22 @@ MULS                                   ; One test for illegal Src EA Mode
             ADDQ    #1,D1
             
             MOVE.L  D5,D6               ; Copy D5 into D6
-            ROR.L   #8,D6               ; Rotate 9 bits to the right (Dn Dst bits)
-            ROR.L   #1,D6               ; Rotate 9 bits to the right (Dn Dst bits)
+            MOVE.L  D5,D6               ; Done three times to combat the page skip..
+            MOVE.L  D5,D6               ; .. These done end up being MOVE, because of the simulator
+            ROL.W   #7,D6               ; Rotate 9 bits to the right (Dn Dst bits)
             ANDI.L  #$0007,D6           ; Isolate the Dn Destination bits
             JMP EADN
             
             RTS
             
 ; At this point, we know D6 is the size of our opcode
-AND         CMP.B   #%0110,D6            ; See if D6 is size "%100" through "%110"..
-            BEQ     ANDLEA              ; If it is, our OpCode is in the format of..
-            CMP.B   #%101,D6            ; .. Dn ~ <EA> --> <EA>
-            BEQ     ANDWEA
-            CMP.B   #%100,D6
-            BEQ     ANDBEA
+AND         AND.B   #$04,D6
+            CMP.B   #%0100,D6           ; See if D6 is size "%100" through "%110"..
+            BEQ     ANDEACH             ; .. Dn ~ <EA> --> <EA>
+            
+            MOVE.L  D5,D6               ; Copy D5 into D6
+            LSR.L   #6,D6               ; Shift the size bits to the far right
+            ANDI.B  #$7,D6              ; Isolate the size bits 
             
             CMP.B   #%10,D6             ; See if D6 is size "%000" through "%010"..
             BEQ     ANDLDN              ; If it is, our OpCode is in the format of..
@@ -830,6 +859,30 @@ AND         CMP.B   #%0110,D6            ; See if D6 is size "%100" through "%11
             BEQ     ANDBDN              ; == 000 at this point
             
             BRA     UNKNOWN
+
+ANDEACH     MOVE.L  D5,D6               ; Copy D5 into D6
+            AND.B   #$3F,D6             ; Isolate our EA Src bits
+            CMP.B   #$39,D6             ; Check for Illegal #$ mode
+            BEQ     UNKNOWN
+            AND.B   #$38,D6             ; Isolate our EA Src Mode bits
+            CMP.B   #$08,D6             ; Check for Illegal mode An
+            BEQ     UNKNOWN
+            CMP.B   #$00,D6             ; Check for Illegal mode Dn 
+            BEQ     UNKNOWN
+            
+            MOVE.L  D5,D6               ; Copy D5 into D6
+            LSR.L   #6,D6               ; Shift the size bits to the far right
+            ANDI.B  #$7,D6              ; Isolate the size bits    
+                 
+            CMP.B   #%0110,D6           ; See if D6 is size "%100" through "%110"..
+            BEQ     ANDLEA              ; If it is, our OpCode is in the format of..
+            CMP.B   #%101,D6            ; .. Dn ~ <EA> --> <EA>
+            BEQ     ANDWEA
+            CMP.B   #%100,D6
+            BEQ     ANDBEA
+            
+            BRA     UNKNOWN
+
             
 ANDLEA      MOVE.L  #'AND.',(A1)+
             MOVE.B  #'L',(A1)+
@@ -847,9 +900,9 @@ ANDBEA      MOVE.L  #'AND.',(A1)+
             BRA     ANDEA
 
 ANDEA       MOVE.B  #' ',(A1)+          ; Add a spacer into our IOStringLoc
+            MOVE.W  #'  ',(A1)+         ; Add a spacer into our IOStringLoc
             MOVE.W  #'  ',(A1)+          ; Add a spacer into our IOStringLoc
-            MOVE.B  #' ',(A1)+          ; Add a spacer into our IOStringLoc
-            ADDQ    #1,D1               ; We added 4 bytes, aka 4 spaces
+            ADDQ    #5,D1               ; We added 4 bytes, aka 4 spaces
             
             MOVE.L  D5,D6
             LSR.L   #8,D6               ; Shift our OpCode a total of 9 bits to the right
@@ -910,14 +963,15 @@ ANDDN
 ; This label determines if the code is either ADD or ADDA           
 ADDADDA     MOVE.L  D5,D6               ; Copy D5 into D6
             LSR.L   #6,D6               ; Shift the size bits to the far right
-            ANDI.B  #$7,D6              ; Isolate the size bits
+            ANDI.B  #$4,D6              ; Isolate the size bits
             
-            CMP.B   #%0110,D6           ; See if D6 is size "%100" through "%110"..
-            BEQ     ADDLEA              ; If it is, our OpCode is in the format of..
-            CMP.B   #%101,D6            ; .. Dn ~ <EA> --> <EA>
-            BEQ     ADDWEA
-            CMP.B   #%100,D6
-            BEQ     ADDBEA
+            CMP.B   #%0100,D6           ; See if D6 is size "%100" through "%110"..
+            BEQ     ADDEA              ; .. Dn ~ <EA> --> <EA>
+            
+            MOVE.L  D5,D6               ; Copy D5 into D6
+            LSR.L   #6,D6               ; Shift the size bits to the far right
+            ANDI.B  #$7,D6              ; Isolate the size bits
+
             
             CMP.B   #%10,D6             ; See if D6 is size "%000" through "%010"..
             BEQ     ADDLDN              ; If it is, our OpCode is in the format of..
@@ -949,6 +1003,30 @@ ADDBDN      MOVE.L  #'ADD.',(A1)+
             MOVE.B  #'B',(A1)+
             ADDQ    #1,D1               ; We added 1 byte into D1
             BRA ANDDN  
+
+ADDEA       MOVE.L  D5,D6               ; Copy D5 into D6
+            AND.B   #$3F,D6             ; Isolate our EA Src bits
+            CMP.B   #$39,D6             ; Check for Illegal #$ mode
+            BEQ     UNKNOWN
+            AND.B   #$38,D6             ; Isolate our EA Src Mode bits
+            CMP.B   #$08,D6             ; Check for Illegal mode An
+            BEQ     UNKNOWN
+            CMP.B   #$00,D6             ; Check for Illegal mode Dn 
+            BEQ     UNKNOWN
+            
+            MOVE.L  D5,D6               ; Copy D5 into D6
+            LSR.L   #6,D6               ; Shift the size bits to the far right
+            ANDI.B  #$7,D6              ; Isolate the size bits    
+                 
+            CMP.B   #%0110,D6           ; See if D6 is size "%100" through "%110"..
+            BEQ     ADDLEA              ; If it is, our OpCode is in the format of..
+            CMP.B   #%101,D6            ; .. Dn ~ <EA> --> <EA>
+            BEQ     ADDWEA
+            CMP.B   #%100,D6
+            BEQ     ADDBEA
+            
+            BRA     UNKNOWN
+
             
 ADDLEA      MOVE.L  #'ADD.',(A1)+
             ADDQ    #4,D1               ; We added 4 new characters to our IOStringLoc
@@ -1114,6 +1192,17 @@ ASLSROOP
             RTS
 ; Start of the Effective Address version of ASLSRO
 AASLSRO     MOVE.L  D5,D6               ; Copy our OpCode into D6
+            AND.L   #$3F,D6             ; Isolate the EA Srcs bits
+            CMP.B   #$39,D6             ; Check for illegal #$ mode
+            BEQ     UNKNOWN
+            AND.L   #$38,D6             ; Isolate the EA src mode bits
+            CMP.B   #$08,D6             ; Check for illegal An Mode
+            BEQ     UNKNOWN
+            CMP.B   #$00,D6             ; Check for illegal Dn mode
+            BEQ     UNKNOWN
+            
+
+            MOVE.L  D5,D6               ; Copy our OpCode into D6
             ROL.W   #7,D6               ; Shift our determination bits to the far right
             ANDI.B  #$07,D6             ; Isolate the determination bits   
             
@@ -1186,6 +1275,7 @@ UNKNOWN
             
             RTS
 * Put variables and constants here
+
 
 
 
