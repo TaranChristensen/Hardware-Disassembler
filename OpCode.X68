@@ -966,18 +966,21 @@ ADDBEA      MOVE.L  #'ADD.',(A1)+
             ADDQ    #4,D1               ; We added 4 new characters to our IOStringLoc
             MOVE.B  #'B',(A1)+
             ADDQ    #1,D1               ; We added 1 byte into D1
+            MOVE.L  #1,D0               ; Move 1 into D0 to indicate bytesize
             BRA     ANDEA
             
 ADDAW       MOVE.L  #'ADDA',(A1)+
             ADDQ    #4,D1               ; We added 4 new characters to our IOStringLoc
             MOVE.W  #'.W',(A1)+
             ADDQ    #2,D1               ; We added 1 byte into D1
+            MOVE.L  #2,D0               ; Move 2 into D0 to indicate wordsize
             BRA     ADDAN
             
 ADDAL       MOVE.L  #'ADDA',(A1)+
             ADDQ    #4,D1               ; We added 4 new characters to our IOStringLoc
             MOVE.W  #'.L',(A1)+
             ADDQ    #2,D1               ; We added 1 byte into D1
+            MOVE.L  #3,D0               ; Move 3 into D0 to indicate longsize
             BRA     ADDAN
        
 ADDAN
