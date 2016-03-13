@@ -761,7 +761,7 @@ CMPOP       MOVE.B  #' ',(A1)+
             MOVE.L  D5,D6               ; Copy D5 into D6
             ROR.L   #8,D6               ; Rotate 9 bits to the right (Dn Dst bits)
             ROR.L   #1,D6               ; Rotate 9 bits to the right (Dn Dst bits)
-            ANDI.L  #$0003,D6           ; Isolate the Dn Destination bits
+            ANDI.L  #$0007,D6           ; Isolate the Dn Destination bits
             JMP EADN
             
             RTS          
@@ -1144,11 +1144,14 @@ AASLSRODL   MOVE.B  #'L',(A1)+          ; L for Left
 AASLSROOP   MOVE.L  D5,D6               ; Copy our OpCode
             ANDI.L  #$3F,D6             ; Isolate our EA bits
             
+            MOVE.B  #'.',(A1)+
+            MOVE.B  #'W',(A1)+
             MOVE.B  #' ',(A1)+
             MOVE.B  #' ',(A1)+
             MOVE.B  #' ',(A1)+
             MOVE.B  #' ',(A1)+
-            ADDQ    #4,D1
+            MOVE.B  #' ',(A1)+
+            ADDQ    #7,D1
             
             JSR EAGETSRCEA
             
@@ -1169,6 +1172,7 @@ UNKNOWN
             
             RTS
 * Put variables and constants here
+
 
 
 
