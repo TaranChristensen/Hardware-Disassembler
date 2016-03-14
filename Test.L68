@@ -1,6 +1,6 @@
 00008000 Starting Address
 Assembler used: EASy68K Editor/Assembler v5.15.04
-Created On: 3/9/2016 11:32:21 PM
+Created On: 3/13/2016 9:28:07 PM
 
 00000000                             1  *-----------------------------------------------------------
 00000000                             2  * Title      : Test
@@ -11,54 +11,60 @@ Created On: 3/9/2016 11:32:21 PM
 00008000                             7  STARTTEST: ORG    $8000
 00008000                             8  
 00008000  4E71                       9  NOP NOP
-00008002  1200                      10      MOVE.B  D0,D1
-00008004  123C 00AB                 11      MOVE.B  #$AB,D1
-00008008  323C ABCD                 12      MOVE.W  #$ABCD,D1
-0000800C                            13      ;MOVE.L  #$ABCDEF01,D1
-0000800C  3612                      14  MOP MOVE.W  (A2),D3
-0000800E  2A1C                      15      MOVE.L  (A4)+,D5
-00008010  7E06                      16      MOVEQ   #6,D7
-00008012  7C07                      17      MOVEQ   #7,D6
-00008014  7805                      18      MOVEQ   #5,D4
-00008016                            19      ;MOVEM   A1/D0-D6,-(A7)
-00008016                            20      ;MOVEM   D0-D6,-(A7)
-00008016  48A7 FFFE                 21      MOVEM   A0-A6/D0-D7,-(A7)
-0000801A                            22      ;MOVEM   A0-A6/D2-D3,-(A7)
-0000801A                            23      ;MOVEM   A0-A2/D1-D6,-(A7)
-0000801A                            24      ;MOVEM   A0-A3/D2-D5,-(A7)
-0000801A                            25      ;MOVEM   A0-A4/D3-D4,-(A7)
-0000801A                            26      ;MOVEM   (A7)+,D1-D2
-0000801A  D441                      27  AOP ADD     D1,D2
-0000801C  D8C3                      28      ADDA    D3,A4
-0000801E  5A46                      29      ADDI    #5,D6
-00008020  9441                      30      SUB     D1,D2
-00008022  C9C3                      31      MULS    D3,D4
-00008024  8CC5                      32      DIVU    D5,D6
-00008026  43F8 5012                 33      LEA     $5012,A1
-0000802A  4240                      34      CLR     D0
-0000802C  C240                      35      AND     D0,D1
-0000802E  E54B                      36      LSL     #2,D3
-00008030  E845                      37      ASR     #4,D5
-00008032  ED5F                      38      ROL     #6,D7
-00008034  B240                      39      CMP     D0,D1
-Line 40 ERROR: Branch instruction displacement is out of range or invalid
-00008036  6400 7FC7                 40  BOP BCC.L   $1FFFF
-0000803A  6EFA                      41      BGT     BOP
-0000803C  6F00 8FD4                 42      BLE     $1012
-00008040  4EB8 1013                 43      JSR     $1013
-00008044  4E75                      44      RTS     
-00008046                            45  
-00008046                            46      END STARTTEST
+00008002= FFFF E1F9 C249 C...       10  data1       DC.W        $FFFF,$E1F9,$C249,$C3C9,$D349
+0000800C= FFFF C349                 11  data2       DC.W        $FFFF,$C349
+00008010  4E71                      12      NOP
+00008012  0679 0045 00008907        13      ADDI    #$45,$8907
+0000801A  5441                      14      ADDI    #$02,D1
+0000801C  1A00                      15      MOVE.B  D0,D5
+0000801E  1A3C 00AB                 16      MOVE.B  #$AB,D5
+00008022  3A3C ABCD                 17      MOVE.W  #$ABCD,D5
+00008026  2A3C ABCDEF01             18      MOVE.L  #$ABCDEF01,D5
+0000802C  3A12                      19  MOP MOVE.W  (A2),D5
+0000802E  2A1C                      20      MOVE.L  (A4)+,D5
+00008030  7A06                      21      MOVEQ   #6,D5
+00008032  48A7 7B7D                 22      MOVEM   A1-A5/A7/D1-D4/D6-D7,-(A7)
+00008036  DA41                      23  AOP ADD     D1,D5
+00008038  DAC3                      24      ADDA    D3,A5
+0000803A  5A45                      25      ADDI    #5,D5
+0000803C  9A01                      26      SUB.B   D1,D5
+0000803E  9A91                      27      SUB.L   (A1),D5
+00008040  CBC3                      28      MULS    D3,D5
+00008042  CBFC 1234                 29      MULS    #$1234,D5
+00008046  8AC5                      30      DIVU    D5,D5
+00008048  8AFC 1234                 31      DIVU    #$1234,D5
+0000804C  4BF8 5012                 32      LEA     $5012,A5
+00008050  4BF9 10101010             33      LEA     $10101010,A5
+00008056  4245                      34      CLR     D5
+00008058  CA40                      35      AND     D0,D5
+0000805A  CA51                      36      AND     (A1),D5
+0000805C  C755                      37      AND     D3,(A5)
+0000805E  E54D                      38      LSL     #2,D5
+00008060  E3D7                      39      LSL.W   (A7)
+00008062  E845                      40      ASR     #4,D5
+00008064  ED5D                      41      ROL     #6,D5
+00008066  BA40                      42      CMP     D0,D5
+00008068  BA7C 0001                 43      CMP     #1,D5
+0000806C  BABC 12345678             44      CMP.L   #$12345678,D5
+00008072  6400 91CB                 45  BOP BCC.L   $123F
+00008076  6EFA                      46      BGT     BOP
+00008078  6F00 8F98                 47      BLE     $1012
+0000807C  4EB8 1013                 48      JSR     $1013
+00008080  4E75                      49      RTS     
+00008082                            50  
+00008082                            51      END STARTTEST
 
-1 error detected
+No errors detected
 No warnings generated
 
 
 SYMBOL TABLE INFORMATION
 Symbol-name         Value
 -------------------------
-AOP                 801A
-BOP                 8036
-MOP                 800C
+AOP                 8036
+BOP                 8072
+DATA1               8002
+DATA2               800C
+MOP                 802C
 NOP                 8000
 STARTTEST           8000
