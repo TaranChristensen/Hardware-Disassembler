@@ -75,31 +75,83 @@ ADDI8                                  ; Two consecutive tests for illegal Src E
             BEQ     ADDIL              ; ..If so, it's ANDI.L
             
             BRA     UNKNOWN            ; If it isn't any, then it's Unknown
-            
-ADDIB       
-            MOVE.L  #'ADDI',(A1)+
-            MOVE.W  #'.B',(A1)+
-            ADDQ    #6,D1              ; We added 6 new characters to our IOStringLoc
-            BRA     ADDIOP
-            
-ADDIW       
-            MOVE.L  #'ADDI',(A1)+
-            MOVE.W  #'.W',(A1)+
-            ADDQ    #6,D1              ; We added 6 new characters to our IOStringLoc 
-            BRA     ADDIOP
-            
-ADDIL      
-            MOVE.L  #'ADDI',(A1)+
-            MOVE.W  #'.L',(A1)+
-            ADDQ    #6,D1              ; We added 6 new characters to our IOStringLoc 
-            BRA     ADDIOP
 
-ADDIOP      MOVE.L  #'    ',(A1)+      ; Add a spacer into our IOStringLoc
-            ADDQ    #4,D1              ; We added 4 bytes, aka 4 spaces
+ADDIB       MOVE.L  #'ADDI',(A1)+
+            MOVE.W  #'.B',(A1)+
+            MOVE.L  #'    ',(A1)+      ; Add a spacer into our IOStringLoc
+            ADDQ    #8,D1              ; We added 10 bytes, aka 4 spaces 6 characters
+            ADDQ    #2,D1
+            
+            MOVE.W  #'#$',(A1)+
+            ADDQ    #2,D1
+            
+            CLR     D6
+            CLR     D4
+            MOVE.W  (A2)+,D6
+            ANDI.W  #$0F,D6
+            JSR     EAHEXtoASCII
+                        
+            MOVE.B #',',(A1)+      ; Add a spacer into our IOStringLoc
+            ADDQ    #1,D1              ; We added 4 bytes, aka 4 spaces
             
             MOVE.L  D5,D6              ; Push D5 into D6
-            ANDI.L  #$003F,D6          ; Isolate the Src EA bits 
+            ANDI.L  #$003F,D6          ; Isolate the Dst EA bits 
+            MOVE.B  #1,D0              ; Push 3 into D0 to indicate bytesize
             JSR EAGETSRCEA             ; Find and print the code stored in D6 
+            
+            RTS
+            
+ADDIW       MOVE.L  #'ADDI',(A1)+
+            MOVE.W  #'.W',(A1)+
+            MOVE.L  #'    ',(A1)+      ; Add a spacer into our IOStringLoc
+            ADDQ    #8,D1              ; We added 10 bytes, aka 4 spaces 6 characters
+            ADDQ    #2,D1
+            
+            MOVE.W  #'#$',(A1)+
+            ADDQ    #2,D1
+            
+            CLR     D6
+            CLR     D4
+            MOVE.W  (A2)+,D6
+            JSR     EAHEXtoASCII
+                        
+            MOVE.B  #',',(A1)+      ; Add a spacer into our IOStringLoc
+            ADDQ    #1,D1              ; We added 4 bytes, aka 4 spaces
+            
+            MOVE.L  D5,D6              ; Push D5 into D6
+            ANDI.L  #$003F,D6          ; Isolate the Dst EA bits 
+            MOVE.B  #2,D0              ; Push 3 into D0 to indicate wordsize
+            JSR EAGETSRCEA             ; Find and print the code stored in D6 
+            
+            RTS
+            
+ADDIL       MOVE.L  #'ADDI',(A1)+
+            MOVE.W  #'.L',(A1)+
+            MOVE.L  #'    ',(A1)+      ; Add a spacer into our IOStringLoc
+            ADDQ    #8,D1              ; We added 10 bytes, aka 4 spaces 6 characters
+            ADDQ    #2,D1
+            
+            MOVE.W  #'#$',(A1)+
+            ADDQ    #2,D1
+            
+            CLR     D6
+            CLR     D4
+            MOVE.L  (A2)+,D6
+            SWAP    D6
+            JSR     EAHEXtoASCII
+            CLR     D4
+            CLR     D6
+            SWAP    D6
+            JSR     EAHEXtoASCII
+                        
+            MOVE.B  #',',(A1)+      ; Add a spacer into our IOStringLoc
+            ADDQ    #1,D1              ; We added 4 bytes, aka 4 spaces
+            
+            MOVE.L  D5,D6              ; Push D5 into D6
+            ANDI.L  #$003F,D6          ; Isolate the Dst EA bits 
+            MOVE.B  #3,D0              ; Push 3 into D0 to indicate longsize
+            JSR EAGETSRCEA             ; Find and print the code stored in D6 
+            
             RTS
               
 ;  Here we assume the first left-most 4 bits are: 0001, 0011, or 0010
