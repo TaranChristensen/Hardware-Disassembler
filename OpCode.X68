@@ -88,7 +88,7 @@ ADDIB       MOVE.L  #'ADDI',(A1)+
             CLR     D6
             CLR     D4
             MOVE.W  (A2)+,D6
-            ANDI.W  #$0F,D6
+            ANDI.W  #$FF,D6
             JSR     EAHEXtoASCII
                         
             MOVE.B #',',(A1)+      ; Add a spacer into our IOStringLoc
@@ -522,7 +522,7 @@ LEA                                    ; Five consecutive tests for illegal Src 
             MOVE.L  D5,D6               ; Copy D5 into D6
             ROR.L   #8,D6               ; Rotate 9 bits to the right (An Dst bits)
             ROR.L   #1,D6               ; 
-            ANDI.L  #$0005,D6           ; Isolate the An Destination bits
+            ANDI.L  #$0007,D6           ; Isolate the An Destination bits
             JMP EAAN
             RTS      
             
@@ -1019,6 +1019,13 @@ ANDDN
 ; This label determines if the code is either ADD or ADDA           
 ADDADDA     MOVE.L  D5,D6               ; Copy D5 into D6
             LSR.L   #6,D6               ; Shift the size bits to the far right
+            ANDI.B  #$7,D6              ; Isolate the size bits
+            
+            CMP.B   #%011,D6            ; ADDA Word Operation <EA> -> An 
+            BEQ     ADDAW
+            CMP.B   #%111,D6            ; ADDA Word Operation <EA> -> An  
+            BEQ     ADDAL
+            
             ANDI.B  #$4,D6              ; Isolate the size bits
             
             CMP.B   #%0100,D6           ; See if D6 is size "%100" through "%110"..
@@ -1036,10 +1043,6 @@ ADDADDA     MOVE.L  D5,D6               ; Copy D5 into D6
             CMP.B   #%00,D6
             BEQ     ADDBDN              ; == 000 at this point
             
-            CMP.B   #%011,D6            ; ADDA Word Operation <EA> -> An 
-            BEQ     ADDAW
-            CMP.B   #%111,D6            ; ADDA Word Operation <EA> -> An  
-            BEQ     ADDAL
             BRA     UNKNOWN
             
 ADDLDN      MOVE.L  #'ADD.',(A1)+
@@ -1118,7 +1121,7 @@ ADDAL       MOVE.L  #'ADDA',(A1)+
             BRA     ADDAN
        
 ADDAN
-            MOVE.L  #'    ',(A1)+          ; Add a spacer into our IOStringLoc
+            MOVE.L  #'    ',(A1)+       ; Add a spacer into our IOStringLoc
             
             ADDQ    #4,D1               ; We added 4 bytes, aka 4 spaces
             
@@ -1331,6 +1334,7 @@ UNKNOWN
             
             RTS
 * Put variables and constants here
+
 
 
 
